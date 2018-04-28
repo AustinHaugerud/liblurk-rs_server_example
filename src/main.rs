@@ -243,7 +243,7 @@ impl ServerCallbacks for ExampleServer {
                             player_room.get_number(),
                             player_room.get_name(),
                             player_room.get_description(),
-                        ))
+                        ).unwrap())
                         .expect("Failed to send room packet.");
 
                     for adj_room_num in player_room.get_adjacent_rooms() {
@@ -256,7 +256,7 @@ impl ServerCallbacks for ExampleServer {
                                 adj_room.get_number(),
                                 adj_room.get_name(),
                                 adj_room.get_description(),
-                            ))
+                            ).unwrap())
                             .expect("Failed to send connection packet.");
                     }
                 }
