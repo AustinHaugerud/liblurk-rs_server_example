@@ -8,13 +8,18 @@ pub struct Map {
 }
 
 impl Map {
-    pub fn get_room(&self, room_number: u16) -> Option<&Room> {
+    pub fn get_room(&self, room_number: &u16) -> Option<&Room> {
         self.rooms.get(&room_number)
     }
 
     pub fn get_start_room(&self) -> &Room {
-        self.get_room(self.start_room_id)
+        self.get_room(&self.start_room_id)
             .expect("Start room does not exist.")
+    }
+
+    pub fn get_start_room_mut(&mut self) -> &mut Room {
+        let id = self.start_room_id;
+        self.get_room_mut(&id).expect("Start room does not exist.")
     }
 
     pub fn get_adjacent_rooms(&self, room_number: u16) -> Option<Vec<&Room>> {
@@ -23,7 +28,7 @@ impl Map {
                 let mut result = vec![];
 
                 for room_id in base_room.adjacent_rooms.iter() {
-                    result.push(self.get_room(room_id.clone()).unwrap());
+                    result.push(self.get_room(&room_id).unwrap());
                 }
 
                 Some(result)

@@ -38,7 +38,7 @@ struct Player {
 
 impl Player {
     fn get_character_packet(&self) -> Character {
-         Character::new(
+        Character::new(
             self.entity_info.name.clone(),
             self.entity_info.alive,
             true,
@@ -279,35 +279,44 @@ impl ServerCallbacks for ExampleServer {
             if player.ready {
                 player.started = true;
                 player.entity_info.location = self.map.get_start_room().get_number();
+                self.map.get_start_room_mut().place_player(&player.id);
+                println!("Sending character packet.");
                 context
                     .get_send_channel()
                     .write_message(player.get_character_packet())
                     .expect("Failed to send character.");
 
+                println!("Sent. Sending player room.");
                 let player_room = self.map
                     .get_player_room(&player.id)
                     .expect("Failed to get player room.");
                 context
                     .get_send_channel()
-                    .write_message(Room::new(
-                        player_room.get_number(),
-                        player_room.get_name(),
-                        player_room.get_description(),
-                    ).unwrap())
+                    .write_message(
+                        Room::new(
+                            player_room.get_number(),
+                            player_room.get_name(),
+                            player_room.get_description(),
+                        ).unwrap(),
+                    )
                     .expect("Failed to send room.");
+                println!("Sent. Sending connections.");
 
                 for adj_room_id in player_room.get_adjacent_rooms().iter() {
                     let adj_room = self.map
-                        .get_room(adj_room_id.clone())
+                        .get_room(&adj_room_id)
                         .expect("Failed to get adj room.");
                     context
                         .get_send_channel()
-                        .write_message(Connection::new(
-                            adj_room.get_number(),
-                            adj_room.get_name(),
-                            adj_room.get_description(),
-                        ).unwrap())
+                        .write_message(
+                            Connection::new(
+                                adj_room.get_number(),
+                                adj_room.get_name(),
+                                adj_room.get_description(),
+                            ).unwrap(),
+                        )
                         .expect("Failed to write connection.");
+                    println!("Sent connection.");
                 }
             } else {
                 context
