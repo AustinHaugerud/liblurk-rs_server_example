@@ -1,6 +1,8 @@
 extern crate liblurk;
 extern crate uuid;
 
+use std::env;
+
 mod map;
 mod entity;
 
@@ -356,8 +358,12 @@ impl ServerCallbacks for ExampleServer {
 }
 
 fn main() {
+
+    let args : Vec<String> = std::env::args().collect();
+    let port_number = args.get(1).expect("Insufficient arguments").parse::<u16>().expect("Failed to parse port number.");
+
     let mut server = Server::create(
-        (IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 5000),
+        (IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port_number),
         Box::new(ExampleServer::new()),
     ).expect("Unable to setup server.");
     server.start();
