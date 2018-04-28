@@ -50,6 +50,7 @@ impl Map {
             self.get_room_mut(&new_location)
                 .unwrap()
                 .place_player(&player_id);
+            return Ok(());
         }
         if !self.has_player(player_id) {
             return Err("Player is not in map".to_string());
@@ -57,7 +58,7 @@ impl Map {
         if !self.has_room(&new_location) {
             return Err("Target room does not exist.".to_string());
         }
-        Err("".to_string())
+        Err("Move player error default.".to_string())
     }
 
     pub fn get_player_room_mut(&mut self, player_id: &Uuid) -> Option<&mut Room> {
