@@ -231,7 +231,7 @@ impl ServerCallbacks for ExampleServer {
 
             match self.map.move_player(&player.id, change_room.room_number) {
                 Ok(_) => player.entity_info.location = change_room.room_number,
-                Err(e) => println!(e),
+                Err(e) => println!("{}", e),
             }
         } else {
             context
