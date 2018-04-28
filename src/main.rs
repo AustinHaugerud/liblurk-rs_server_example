@@ -229,10 +229,10 @@ impl ServerCallbacks for ExampleServer {
                 return;
             }
 
-            self.map
-                .move_player(&player.id, change_room.room_number)
-                .expect("Failed to move player.");
-            player.entity_info.location = change_room.room_number;
+            match self.map.move_player(&player.id, change_room.room_number) {
+                Ok(_) => player.entity_info.location = change_room.room_number,
+                Err(e) => println!(e),
+            }
         } else {
             context
                 .get_send_channel()
