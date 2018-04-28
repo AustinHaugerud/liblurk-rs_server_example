@@ -52,10 +52,10 @@ impl Map {
                 .place_player(&player_id);
         }
         if !self.has_player(player_id) {
-            return Err("".to_string());
+            return Err("Player is not in map".to_string());
         }
         if !self.has_room(&new_location) {
-            return Err("".to_string());
+            return Err("Target room does not exist.".to_string());
         }
         Err("".to_string())
     }
