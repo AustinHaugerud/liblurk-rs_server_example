@@ -230,7 +230,36 @@ impl ServerCallbacks for ExampleServer {
             }
 
             match self.map.move_player(&player.id, change_room.room_number) {
-                Ok(_) => player.entity_info.location = change_room.room_number,
+                Ok(_) => {
+                    player.entity_info.location = change_room.room_number;
+
+                    let player_room = self.map
+                        .get_player_room(&player.id)
+                        .expect("Bug: Player wasn't moved correctly.");
+
+                    context
+                        .get_send_channel()
+                        .write_message(Room::new(
+                            player_room.get_number(),
+                            player_room.get_name(),
+                            player_room.get_description(),
+                        ))
+                        .expect("Failed to send room packet.");
+
+                    for adj_room_num in player_room.get_adjacent_rooms() {
+                        let adj_room = self.map
+                            .get_room(&adj_room_num)
+                            .expect("Bug: Adjacent room doesn't exist.");
+                        context
+                            .get_send_channel()
+                            .write_message(Connection::new(
+                                adj_room.get_number(),
+                                adj_room.get_name(),
+                                adj_room.get_description(),
+                            ))
+                            .expect("Failed to send connection packet.");
+                    }
+                }
                 Err(e) => println!("{}", e),
             }
         } else {
