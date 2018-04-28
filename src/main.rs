@@ -1,8 +1,6 @@
 extern crate liblurk;
 extern crate uuid;
 
-use std::env;
-
 mod map;
 mod entity;
 
@@ -14,7 +12,7 @@ use uuid::Uuid;
 use liblurk::server::server::{Server, ServerCallbacks, ServerEventContext};
 use liblurk::protocol::protocol_message::*;
 
-use map::*;
+use map::{Map, MapBuilder};
 use entity::*;
 
 const INITIAL_POINTS: u16 = 100;
@@ -38,22 +36,22 @@ struct Player {
     id: Uuid,
 }
 
-impl<'a> From<&'a mut Player> for Character {
-    fn from(player: &mut Player) -> Self {
-        Character::new(
-            player.entity_info.name.clone(),
-            player.entity_info.alive,
+impl Player {
+    fn get_character_packet(&self) -> Character {
+         Character::new(
+            self.entity_info.name.clone(),
+            self.entity_info.alive,
             true,
             false,
-            player.started,
-            player.ready,
-            player.entity_info.attack,
-            player.entity_info.defense,
-            player.entity_info.regen,
-            player.entity_info.health,
-            player.entity_info.gold,
-            player.entity_info.location,
-            player.entity_info.desc.clone(),
+            self.started,
+            self.ready,
+            self.entity_info.attack,
+            self.entity_info.defense,
+            self.entity_info.regen,
+            self.entity_info.health,
+            self.entity_info.gold,
+            self.entity_info.location,
+            self.entity_info.desc.clone(),
         ).expect("Invalid character packet from player instance.")
     }
 }
@@ -145,13 +143,34 @@ impl ServerCallbacks for ExampleServer {
     }
 
     fn on_disconnect(&mut self, client_id: &Uuid) {
+        println!("Disconnect made.");
         self.players.remove(client_id);
     }
 
     fn on_message(&mut self, context: &mut ServerEventContext, message: &Message) {
+        println!("Received message packet.");
+
+        // If the client sends a message to themselves, we must handle it as a special case. If the logic below
+        // handles it, the lock will not be acquirable, and we'll deadlock.
+        if message.receiver
+            == self.players
+                .get(&context.get_client_id())
+                .expect("Failed to get player")
+                .entity_info
+                .name
+        {
+            context
+                .get_send_channel()
+                .write_message_ref(message)
+                .expect("Failed to send message.");
+            return;
+        }
+
         if let Some(id) = self.get_player_id_by_name(&message.receiver) {
             let op = context.get_client(&id).expect("Could not find client.");
+            println!("Getting client lock.");
             let mut client = op.lock().unwrap();
+            println!("Got client lock.");
             client
                 .get_send_channel()
                 .write_message_ref(message)
@@ -167,6 +186,7 @@ impl ServerCallbacks for ExampleServer {
     }
 
     fn on_change_room(&mut self, context: &mut ServerEventContext, change_room: &ChangeRoom) {
+        println!("Change room packet received.");
         if let Some(player) = self.players.get_mut(&context.get_client_id()) {
             if !player.started {
                 context
@@ -226,6 +246,7 @@ impl ServerCallbacks for ExampleServer {
     }
 
     fn on_fight(&mut self, context: &mut ServerEventContext, fight: &Fight) {
+        println!("Fight packet received.");
         context
             .get_send_channel()
             .write_message(
@@ -235,6 +256,7 @@ impl ServerCallbacks for ExampleServer {
     }
 
     fn on_pvp_fight(&mut self, context: &mut ServerEventContext, pvp_fight: &PvpFight) {
+        println!("Pvp fight packet.");
         context
             .get_send_channel()
             .write_message(
@@ -244,6 +266,7 @@ impl ServerCallbacks for ExampleServer {
     }
 
     fn on_loot(&mut self, context: &mut ServerEventContext, _: &Loot) {
+        println!("Loot packet received.");
         context
             .get_send_channel()
             .write_message(Error::no_target("Cannot loot yet.".to_string()).unwrap())
@@ -251,14 +274,41 @@ impl ServerCallbacks for ExampleServer {
     }
 
     fn on_start(&mut self, context: &mut ServerEventContext, _: &Start) {
+        println!("Start packet received.");
         if let Some(player) = self.players.get_mut(&context.get_client_id()) {
             if player.ready {
                 player.started = true;
                 player.entity_info.location = self.map.get_start_room().get_number();
                 context
                     .get_send_channel()
-                    .write_message(Character::from(player))
+                    .write_message(player.get_character_packet())
                     .expect("Failed to send character.");
+
+                let player_room = self.map
+                    .get_player_room(&player.id)
+                    .expect("Failed to get player room.");
+                context
+                    .get_send_channel()
+                    .write_message(Room::new(
+                        player_room.get_number(),
+                        player_room.get_name(),
+                        player_room.get_description(),
+                    ).unwrap())
+                    .expect("Failed to send room.");
+
+                for adj_room_id in player_room.get_adjacent_rooms().iter() {
+                    let adj_room = self.map
+                        .get_room(adj_room_id.clone())
+                        .expect("Failed to get adj room.");
+                    context
+                        .get_send_channel()
+                        .write_message(Connection::new(
+                            adj_room.get_number(),
+                            adj_room.get_name(),
+                            adj_room.get_description(),
+                        ).unwrap())
+                        .expect("Failed to write connection.");
+                }
             } else {
                 context
                     .get_send_channel()
@@ -349,14 +399,17 @@ impl ServerCallbacks for ExampleServer {
     }
 
     fn on_leave(&mut self, client_id: &Uuid) {
+        println!("Leave packet received.");
         self.on_disconnect(client_id);
     }
 }
 
 fn main() {
-
-    let args : Vec<String> = std::env::args().collect();
-    let port_number = args.get(1).expect("Insufficient arguments").parse::<u16>().expect("Failed to parse port number.");
+    let args: Vec<String> = std::env::args().collect();
+    let port_number = args.get(1)
+        .expect("Insufficient arguments")
+        .parse::<u16>()
+        .expect("Failed to parse port number.");
 
     let mut server = Server::create(
         (IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port_number),

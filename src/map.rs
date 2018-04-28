@@ -119,6 +119,18 @@ impl Room {
     pub fn has_player(&self, player_id: &Uuid) -> bool {
         self.player_ids.contains(&player_id)
     }
+
+    pub fn get_description(&self) -> String {
+        self.description.clone()
+    }
+
+    pub fn get_name(&self) -> String {
+        self.name.clone()
+    }
+
+    pub fn get_adjacent_rooms(&self) -> &Vec<u16> {
+        &self.adjacent_rooms
+    }
 }
 
 pub struct MapBuilder {
