@@ -257,10 +257,6 @@ impl ServerCallbacks for ExampleServer {
                 player.entity_info.location = self.map.get_start_room().get_number();
                 context
                     .get_send_channel()
-                    .write_message(Accept::new(START_TYPE))
-                    .expect("Failed to send start accept.");
-                context
-                    .get_send_channel()
                     .write_message(Character::from(player))
                     .expect("Failed to send character.");
             } else {
