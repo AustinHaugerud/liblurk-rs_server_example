@@ -1,0 +1,8 @@
+[package]
+name = "liblurk-rs_server_example"
+version = "0.1.0"
+authors = ["AustinHaugerud <austin15328@hotmail.com>"]
+
+[dependencies]
+liblurk = { git = "https://github.com/AustinHaugerud/liblurk-rs.git", branch = "ajjenkins_dev" }
+uuid = "0.6"
