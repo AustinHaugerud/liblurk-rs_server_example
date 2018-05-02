@@ -179,6 +179,8 @@ impl ServerCallbacks for ExampleServer {
             if message.receiver == player_name {
                 context.get_send_channel().write_message_ref(message)?
             }
+
+            return Ok(());
         }
 
         if let Some(id) = self.get_player_id_by_name(&message.receiver) {
