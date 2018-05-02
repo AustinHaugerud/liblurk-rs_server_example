@@ -117,15 +117,6 @@ impl ExampleServer {
         }
         None
     }
-
-    fn has_player(&self, search_name : &String) -> bool {
-        for (id, player) in self.players.iter() {
-            if search_name.eq(&player.entity_info.name) {
-                return true;
-            }
-        }
-        return false;
-    }
 }
 
 impl ServerCallbacks for ExampleServer {
@@ -186,23 +177,12 @@ impl ServerCallbacks for ExampleServer {
 
             if message.receiver == player_name {
                 println!("Player messaged themselves.");
-                context.get_send_channel().write_message_ref(message)?
+                context.get_send_channel().write_message_ref(message)?;
+                return Ok(());
             }
-
-            return Ok(());
         }
 
-        if !self.has_player(&message.receiver) {
-            println!("On message: bad target.");
-            context.get_send_channel().write_message(
-                Error::no_target("Message target does not exist.".to_string()).unwrap(),
-            )?;
-            return Ok(());
-        }
-        println!("On message: good target.");
-
-        let id = self.get_player_id_by_name(&message.receiver).unwrap();
-        {
+        if let Some(id) = self.get_player_id_by_name(&message.receiver) {
             println!("Player messaged other player.");
             match context.get_client(&id) {
                 Ok(op) => match op {
@@ -219,6 +199,11 @@ impl ServerCallbacks for ExampleServer {
                     return Err(());
                 },
             }
+        } else {
+            println!("On message: bad target.");
+            context.get_send_channel().write_message(
+                Error::no_target("Message target does not exist.".to_string()).unwrap(),
+            )?;
         }
 
         println!("On message completed.");
