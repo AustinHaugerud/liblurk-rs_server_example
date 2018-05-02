@@ -295,6 +295,8 @@ impl ServerCallbacks for ExampleServer {
                                 adj_room.get_description(),
                             ).unwrap(),
                         )?;
+
+                        context.get_send_channel().write_message(player.get_character_packet())?;
                     }
                 }
                 Err(e) => {
@@ -314,9 +316,15 @@ impl ServerCallbacks for ExampleServer {
 
     fn on_fight(&mut self, context: &mut ServerEventContext, fight: &Fight) -> LurkServerError {
         println!("Fight packet received.");
-        context.get_send_channel().write_message(
-            Error::no_fight("Server does not have fighting yet.".to_string()).unwrap(),
-        )
+
+        if let Some(player) = self.players.get(&context.get_client_id()) {
+           return context.get_send_channel().write_message(player.get_character_packet());
+        }
+        else {
+            println!("On Fight Error: untracked player");
+        }
+
+        return Ok(())
     }
 
     fn on_pvp_fight(
