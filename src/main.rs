@@ -201,6 +201,7 @@ impl ServerCallbacks for ExampleServer {
                 },
             }
         } else {
+            println!("On message: bad target.");
             context.get_send_channel().write_message(
                 Error::no_target("Message target does not exist.".to_string()).unwrap(),
             )?;
