@@ -170,15 +170,16 @@ impl ServerCallbacks for ExampleServer {
             }
         }
 
-        // If the client sends a message to themselves, we must handle it as a special case. If the logic farther below
-        // handles it, the lock will not be acquirable, and we'll deadlock.
-        {
-            let player_name = self.players
+        let player_name = self.players
                 .get(&context.get_client_id())
                 .unwrap()
                 .entity_info
                 .name
                 .clone();
+
+        // If the client sends a message to themselves, we must handle it as a special case. If the logic farther below
+        // handles it, the lock will not be acquirable, and we'll deadlock.
+        {
 
             if message.receiver == player_name {
                 println!("Player messaged themselves.");
@@ -188,7 +189,7 @@ impl ServerCallbacks for ExampleServer {
         }
 
         if let Some(id) = self.get_player_id_by_name(&message.receiver) {
-            println!("Player messaged other player.");
+            println!("Player messaged other player. {} -> {}", player_name, message.receiver);
             match context.get_client(&id) {
                 Ok(op) => match op {
                     Some(m) => match m.lock() {
