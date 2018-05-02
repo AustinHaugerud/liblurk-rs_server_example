@@ -382,8 +382,10 @@ impl ServerCallbacks for ExampleServer {
 
         if let Some(player) = self.players.get_mut(&context.get_client_id()) {
             if !player.started {
+                println!("Accept character!");
                 context
                     .enqueue_message_this(Accept::new(CHARACTER_TYPE));
+                println!("Accept enqueued!");
 
                 player.ready = true;
                 player.entity_info = Entity {
