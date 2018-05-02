@@ -6,3 +6,4 @@ authors = ["AustinHaugerud <austin15328@hotmail.com>"]
 [dependencies]
 liblurk = { git = "https://github.com/AustinHaugerud/liblurk-rs.git", branch = "ajjenkins_dev" }
 uuid = "0.6"
+rand = "*"
