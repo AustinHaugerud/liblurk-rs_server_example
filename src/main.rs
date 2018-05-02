@@ -168,7 +168,6 @@ impl ServerCallbacks for ExampleServer {
         // If the client sends a message to themselves, we must handle it as a special case. If the logic farther below
         // handles it, the lock will not be acquirable, and we'll deadlock.
         {
-            println!("Player messaged themselves.");
             let player_name = self.players
                 .get(&context.get_client_id())
                 .unwrap()
@@ -177,6 +176,7 @@ impl ServerCallbacks for ExampleServer {
                 .clone();
 
             if message.receiver == player_name {
+                println!("Player messaged themselves.");
                 context.get_send_channel().write_message_ref(message)?
             }
 
