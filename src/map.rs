@@ -102,7 +102,7 @@ pub struct Room {
     num: u16,
     player_ids: HashSet<Uuid>,
     spawner: Box<MonsterSpawn + Send>,
-    monsters : Vec<Entity>,
+    monsters: Vec<Entity>,
 }
 
 impl Room {
@@ -172,7 +172,7 @@ impl MapBuilder {
             num: self.room_number,
             player_ids: HashSet::new(),
             spawner: monster_spawner,
-            monsters : vec![],
+            monsters: vec![],
         };
 
         self.buildee.rooms.insert(self.room_number, room);

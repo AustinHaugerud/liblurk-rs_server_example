@@ -76,12 +76,18 @@ impl ExampleServer {
     fn new() -> ExampleServer {
         let mut map_builder = MapBuilder::new();
 
-        let entry_room_id =
-            map_builder.register_room("Entry Room", "This room seems to be the entrance.", monster_spawners::null_spawner());
+        let entry_room_id = map_builder.register_room(
+            "Entry Room",
+            "This room seems to be the entrance.",
+            monster_spawners::null_spawner(),
+        );
         let basement_id =
             map_builder.register_room("Basement", "It's very dark, and there seems to be some gross old canned food. It looks like there's a dumbweighter to the attic.", monster_spawners::null_spawner());
-        let parlor_id =
-            map_builder.register_room("Parlor", "There's a mess of old furniture and music.", monster_spawners::null_spawner());
+        let parlor_id = map_builder.register_room(
+            "Parlor",
+            "There's a mess of old furniture and music.",
+            monster_spawners::null_spawner(),
+        );
         let attic_id =
             map_builder.register_room("Attic", "Eek! There's some big spiders up here! There seems to be a dumbweighter to the basement.", monster_spawners::null_spawner());
 
@@ -171,16 +177,15 @@ impl ServerCallbacks for ExampleServer {
         }
 
         let player_name = self.players
-                .get(&context.get_client_id())
-                .unwrap()
-                .entity_info
-                .name
-                .clone();
+            .get(&context.get_client_id())
+            .unwrap()
+            .entity_info
+            .name
+            .clone();
 
         // If the client sends a message to themselves, we must handle it as a special case. If the logic farther below
         // handles it, the lock will not be acquirable, and we'll deadlock.
         {
-
             if message.receiver == player_name {
                 println!("Player messaged themselves.");
                 context.get_send_channel().write_message_ref(message)?;
@@ -189,22 +194,29 @@ impl ServerCallbacks for ExampleServer {
         }
 
         if let Some(id) = self.get_player_id_by_name(&message.receiver) {
-            println!("Player messaged other player. {} -> {}", player_name, message.receiver);
+            println!(
+                "Player messaged other player. {} -> {}",
+                player_name, message.receiver
+            );
             match context.get_client(&id) {
-                Ok(op) => match op {
-                    Some(m) => match m.lock() {
-                        Ok(mut c) => {
-                            c.get_send_channel().write_message_ref(message)?;
+                Ok(op) => {
+                    println!("On message: Locking target client.");
+                    match op {
+                        Some(m) => match m.lock() {
+                            Ok(mut c) => {
+                                println!("On Message: Lock complete, sending message");
+                                c.get_send_channel().write_message_ref(message)?;
+                            }
+                            Err(_) => {
+                                println!("On message: poison error.");
+                                return Err(());
+                            }
+                        },
+                        None => {
+                            println!("Did not retrieve client as expected.");
                         }
-                        Err(_) => {
-                            println!("On message: poison error.");
-                            return Err(());
-                        }
-                    },
-                    None => {
-                        println!("Did not retrieve client as expected.");
                     }
-                },
+                }
                 Err(_) => {
                     println!("On message: Error getting client.");
                     return Err(());
@@ -297,7 +309,9 @@ impl ServerCallbacks for ExampleServer {
                             ).unwrap(),
                         )?;
 
-                        context.get_send_channel().write_message(player.get_character_packet())?;
+                        context
+                            .get_send_channel()
+                            .write_message(player.get_character_packet())?;
                     }
                 }
                 Err(e) => {
@@ -319,13 +333,14 @@ impl ServerCallbacks for ExampleServer {
         println!("Fight packet received.");
 
         if let Some(player) = self.players.get(&context.get_client_id()) {
-           return context.get_send_channel().write_message(player.get_character_packet());
-        }
-        else {
+            return context
+                .get_send_channel()
+                .write_message(player.get_character_packet());
+        } else {
             println!("On Fight Error: untracked player");
         }
 
-        return Ok(())
+        return Ok(());
     }
 
     fn on_pvp_fight(
@@ -433,7 +448,6 @@ impl ServerCallbacks for ExampleServer {
                     .get_send_channel()
                     .write_message(Accept::new(CHARACTER_TYPE))?;
 
-
                 player.ready = true;
                 player.entity_info = Entity {
                     name: character.player_name.clone(),
@@ -451,7 +465,6 @@ impl ServerCallbacks for ExampleServer {
                 context
                     .get_send_channel()
                     .write_message(player.get_character_packet())?;
-
             } else {
                 context.get_send_channel().write_message(
                     Error::other("Your stats cannot be edited at this time.".to_string()).unwrap(),
