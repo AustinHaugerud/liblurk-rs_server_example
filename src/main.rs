@@ -323,6 +323,12 @@ impl ServerCallbacks for ExampleServer {
     fn on_start(&mut self, context: &mut ServerEventContext, _: &Start) -> LurkServerError {
         println!("Start packet received.");
         if let Some(player) = self.players.get_mut(&context.get_client_id()) {
+
+            if player.started {
+                context.get_send_channel().write_message(Error::other("You've already started.".to_string()).unwrap())?;
+                return Ok(());
+            }
+
             if player.ready {
                 player.started = true;
                 player.entity_info.location = self.map.get_start_room().get_number();
