@@ -129,32 +129,29 @@ impl ExampleServer {
 impl ServerCallbacks for ExampleServer {
     fn on_connect(&mut self, context: &mut ServerEventContext) -> LurkServerError {
         println!("Connection made!");
-        match context.get_send_channel().write_message(get_game_packet()) {
-            Ok(()) => {
-                self.players.insert(
-                    context.get_client_id(),
-                    Player {
-                        entity_info: Entity {
-                            name: String::new(),
-                            attack: 0,
-                            defense: 0,
-                            regen: 0,
-                            health: 0,
-                            gold: 0,
-                            location: 0,
-                            alive: false,
-                            monster: false,
-                            desc: String::new(),
-                        },
-                        ready: false,
-                        started: false,
-                        id: context.get_client_id().clone(),
-                    },
-                );
-                Ok(())
-            }
-            Err(_) => Err(()),
-        }
+
+        context.enqueue_message_this(get_game_packet());
+        self.players.insert(
+            context.get_client_id(),
+            Player {
+                entity_info: Entity {
+                    name: String::new(),
+                    attack: 0,
+                    defense: 0,
+                    regen: 0,
+                    health: 0,
+                    gold: 0,
+                    location: 0,
+                    alive: false,
+                    monster: false,
+                    desc: String::new(),
+                },
+                ready: false,
+                started: false,
+                id: context.get_client_id().clone(),
+            },
+        );
+        Ok(())
     }
 
     fn on_disconnect(&mut self, client_id: &Uuid) {
@@ -169,64 +166,12 @@ impl ServerCallbacks for ExampleServer {
     ) -> LurkServerError {
         println!("Received message packet.");
 
-        {
-            if !self.players.contains_key(&context.get_client_id()) {
-                println!("Error: player not tracked.");
-                return Err(());
-            }
-        }
-
-        let player_name = self.players
-            .get(&context.get_client_id())
-            .unwrap()
-            .entity_info
-            .name
-            .clone();
-
-        // If the client sends a message to themselves, we must handle it as a special case. If the logic farther below
-        // handles it, the lock will not be acquirable, and we'll deadlock.
-        {
-            if message.receiver == player_name {
-                println!("Player messaged themselves.");
-                context.get_send_channel().write_message_ref(message)?;
-                return Ok(());
-            }
-        }
-
         if let Some(id) = self.get_player_id_by_name(&message.receiver) {
-            println!(
-                "Player messaged other player. {} -> {}",
-                player_name, message.receiver
-            );
-            match context.get_client(&id) {
-                Ok(op) => {
-                    println!("On message: Locking target client.");
-                    match op {
-                        Some(m) => match m.lock() {
-                            Ok(mut c) => {
-                                println!("On Message: Lock complete, sending message");
-                                c.get_send_channel().write_message_ref(message)?;
-                            }
-                            Err(_) => {
-                                println!("On message: poison error.");
-                                return Err(());
-                            }
-                        },
-                        None => {
-                            println!("Did not retrieve client as expected.");
-                        }
-                    }
-                }
-                Err(_) => {
-                    println!("On message: Error getting client.");
-                    return Err(());
-                }
-            }
+            context.enqueue_message(message.clone(), id.clone());
         } else {
             println!("On message: bad target.");
-            context.get_send_channel().write_message(
-                Error::no_target("Message target does not exist.".to_string()).unwrap(),
-            )?;
+            context.enqueue_message_this(
+                Error::no_target("Message target does not exist.".to_string()).unwrap());
         }
 
         println!("On message completed.");
@@ -241,29 +186,25 @@ impl ServerCallbacks for ExampleServer {
         println!("Change room packet received.");
         if let Some(player) = self.players.get_mut(&context.get_client_id()) {
             if !player.started {
-                context.get_send_channel().write_message(
-                    Error::not_ready("You have not started yet.".to_string()).unwrap(),
-                )?;
+                context.enqueue_message_this(
+                    Error::not_ready("You have not started yet.".to_string()).unwrap());
 
-                context.get_send_channel().write_message(
-                    Error::not_ready("You have not started yet.".to_string()).unwrap(),
-                )?;
+                context.enqueue_message_this(
+                    Error::not_ready("You have not started yet.".to_string()).unwrap());
 
                 return Ok(());
             }
 
             if !self.map.has_player(&player.id) {
-                context.get_send_channel().write_message(
-                    Error::other("Internal server error: Player not in map.".to_string()).unwrap(),
-                )?;
+                context.enqueue_message_this(
+                    Error::other("Internal server error: Player not in map.".to_string()).unwrap());
 
                 return Ok(());
             }
 
             if !self.map.has_room(&change_room.room_number) {
                 context
-                    .get_send_channel()
-                    .write_message(Error::bad_room("Room does not exist.".to_string()).unwrap())?;
+                    .enqueue_message_this(Error::bad_room("Room does not exist.".to_string()).unwrap());
 
                 return Ok(());
             }
@@ -274,8 +215,7 @@ impl ServerCallbacks for ExampleServer {
                 .is_adjacent_to(change_room.room_number)
             {
                 context
-                    .get_send_channel()
-                    .write_message(Error::bad_room("Room is not ahead.".to_string()).unwrap())?;
+                    .enqueue_message_this(Error::bad_room("Room is not ahead.".to_string()).unwrap());
 
                 return Ok(());
             }
@@ -288,30 +228,29 @@ impl ServerCallbacks for ExampleServer {
                         .get_player_room(&player.id)
                         .expect("Bug: Player wasn't moved correctly.");
 
-                    context.get_send_channel().write_message(
+                    context.enqueue_message_this(
                         Room::new(
                             player_room.get_number(),
                             player_room.get_name(),
                             limit_str_len(&player_room.get_description()),
                         ).expect("Bug: Invalid room packet created."),
-                    )?;
+                    );
 
                     for adj_room_num in player_room.get_adjacent_rooms() {
                         let adj_room = self.map
                             .get_room(&adj_room_num)
                             .expect("Bug: Adjacent room doesn't exist.");
 
-                        context.get_send_channel().write_message(
+                        context.enqueue_message_this(
                             Connection::new(
                                 adj_room.get_number(),
                                 adj_room.get_name(),
                                 adj_room.get_description(),
                             ).unwrap(),
-                        )?;
+                        );
 
                         context
-                            .get_send_channel()
-                            .write_message(player.get_character_packet())?;
+                            .enqueue_message_this(player.get_character_packet());
                     }
                 }
                 Err(e) => {
@@ -320,11 +259,11 @@ impl ServerCallbacks for ExampleServer {
                 }
             }
         } else {
-            context.get_send_channel().write_message(
+            context.enqueue_message_this(
                 Error::other(
                     "Internal server error: Player not tracked for this session.".to_string(),
                 ).unwrap(),
-            )?;
+            );
         }
         return Ok(());
     }
@@ -333,9 +272,7 @@ impl ServerCallbacks for ExampleServer {
         println!("Fight packet received.");
 
         if let Some(player) = self.players.get(&context.get_client_id()) {
-            return context
-                .get_send_channel()
-                .write_message(player.get_character_packet());
+            context.enqueue_message_this(player.get_character_packet());
         } else {
             println!("On Fight Error: untracked player");
         }
@@ -349,16 +286,17 @@ impl ServerCallbacks for ExampleServer {
         pvp_fight: &PvpFight,
     ) -> LurkServerError {
         println!("Pvp fight packet.");
-        context.get_send_channel().write_message(
+        context.enqueue_message_this(
             Error::no_pvp("Pvp is not currently on this server.".to_string()).unwrap(),
-        )
+        );
+        Ok(())
     }
 
     fn on_loot(&mut self, context: &mut ServerEventContext, _: &Loot) -> LurkServerError {
         println!("Loot packet received.");
         context
-            .get_send_channel()
-            .write_message(Error::no_target("Cannot loot yet.".to_string()).unwrap())
+            .enqueue_message_this(Error::no_target("Cannot loot yet.".to_string()).unwrap());
+        Ok(())
     }
 
     fn on_start(&mut self, context: &mut ServerEventContext, _: &Start) -> LurkServerError {
@@ -366,8 +304,7 @@ impl ServerCallbacks for ExampleServer {
         if let Some(player) = self.players.get_mut(&context.get_client_id()) {
             if player.started {
                 context
-                    .get_send_channel()
-                    .write_message(Error::other("You've already started.".to_string()).unwrap())?;
+                    .enqueue_message_this(Error::other("You've already started.".to_string()).unwrap());
                 return Ok(());
             }
 
@@ -377,46 +314,45 @@ impl ServerCallbacks for ExampleServer {
                 self.map.get_start_room_mut().place_player(&player.id);
 
                 context
-                    .get_send_channel()
-                    .write_message(player.get_character_packet())?;
+                    .enqueue_message_this(player.get_character_packet());
 
                 let player_room = self.map
                     .get_player_room(&player.id)
                     .expect("Bug: Failed to get player room.");
 
-                context.get_send_channel().write_message(
+                context.enqueue_message_this(
                     Room::new(
                         player_room.get_number(),
                         player_room.get_name(),
                         player_room.get_description(),
                     ).unwrap(),
-                )?;
+                );
 
                 for adj_room_id in player_room.get_adjacent_rooms().iter() {
                     let adj_room = self.map
                         .get_room(&adj_room_id)
                         .expect("Bug: Failed to get adj room.");
 
-                    context.get_send_channel().write_message(
+                    context.enqueue_message_this(
                         Connection::new(
                             adj_room.get_number(),
                             adj_room.get_name(),
                             adj_room.get_description(),
                         ).unwrap(),
-                    )?;
+                    );
                 }
             } else {
-                context.get_send_channel().write_message(
+                context.enqueue_message_this(
                     Error::not_ready("You are not ready to start.".to_string()).unwrap(),
-                )?;
+                );
             }
         } else {
-            context.get_send_channel().write_message(
+            context.enqueue_message_this(
                 Error::other(
                     "Internal server error: The player for this session is not tracked."
                         .to_string(),
                 ).unwrap(),
-            )?;
+            );
         }
         Ok(())
     }
@@ -429,24 +365,25 @@ impl ServerCallbacks for ExampleServer {
         println!("Got character message.");
 
         if character.attack + character.defense + character.regeneration > INITIAL_POINTS {
-            return context.get_send_channel().write_message(
+            context.enqueue_message_this(
                 Error::stat_error("Invalid amount of stat points spent.".to_string()).unwrap(),
             );
+            return Ok(());
         }
 
         if character.attack > STAT_LIMIT || character.defense > STAT_LIMIT
             || character.regeneration > STAT_LIMIT
         {
-            return context.get_send_channel().write_message(
+            context.enqueue_message_this(
                 Error::stat_error("One or more attributes were set too high.".to_string()).unwrap(),
             );
+            return Ok(());
         }
 
         if let Some(player) = self.players.get_mut(&context.get_client_id()) {
             if !player.started {
                 context
-                    .get_send_channel()
-                    .write_message(Accept::new(CHARACTER_TYPE))?;
+                    .enqueue_message_this(Accept::new(CHARACTER_TYPE));
 
                 player.ready = true;
                 player.entity_info = Entity {
@@ -463,20 +400,19 @@ impl ServerCallbacks for ExampleServer {
                 };
 
                 context
-                    .get_send_channel()
-                    .write_message(player.get_character_packet())?;
+                    .enqueue_message_this(player.get_character_packet());
             } else {
-                context.get_send_channel().write_message(
+                context.enqueue_message_this(
                     Error::other("Your stats cannot be edited at this time.".to_string()).unwrap(),
-                )?;
+                );
             }
         } else {
-            context.get_send_channel().write_message(
+            context.enqueue_message_this(
                 Error::other(
                     "Internal server error: the player for this session is not tracked."
                         .to_string(),
                 ).unwrap(),
-            )?;
+            );
         }
         Ok(())
     }
