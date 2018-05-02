@@ -158,15 +158,17 @@ impl ServerCallbacks for ExampleServer {
     fn on_message(&mut self, context: &mut ServerEventContext, message: &Message) -> LurkServerError {
         println!("Received message packet.");
 
-        // If the client sends a message to themselves, we must handle it as a special case. If the logic farther below
-        // handles it, the lock will not be acquirable, and we'll deadlock.
         {
             if !self.players.contains_key(&context.get_client_id()) {
-                return Ok(());
+                println!("Error: player not tracked.");
+                return Err(());
             }
         }
 
+        // If the client sends a message to themselves, we must handle it as a special case. If the logic farther below
+        // handles it, the lock will not be acquirable, and we'll deadlock.
         {
+            println!("Player messaged themselves.");
             let player_name = self.players
                 .get(&context.get_client_id())
                 .unwrap()
@@ -180,17 +182,21 @@ impl ServerCallbacks for ExampleServer {
         }
 
         if let Some(id) = self.get_player_id_by_name(&message.receiver) {
+            println!("Player messaged other player.");
             match context.get_client(&id) {
                 Ok(op) => match op {
                     Some(m) => match m.lock() {
                         Ok(c) => { context.get_send_channel().write_message_ref(message)?; },
-                        Err(_) => { return Err(()); },
+                        Err(_) => { println!("On message: poison error."); return Err(()); },
                     },
                     None => {
                         println!("Did not retrieve client as expected.");
                     }
                 },
-                Err(_) => { },
+                Err(_) => {
+                    println!("On message: Error getting client.");
+                    return Err(());
+                },
             }
         } else {
             context.get_send_channel().write_message(
@@ -198,6 +204,7 @@ impl ServerCallbacks for ExampleServer {
             )?;
         }
 
+        println!("On message completed.");
         return Ok(());
     }
 
