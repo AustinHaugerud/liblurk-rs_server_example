@@ -9,31 +9,61 @@ pub mod monster_spawners {
     use entity::Entity;
     use rand::{thread_rng, Rng};
 
-    fn spider_spawner() -> Box<MonsterSpawn> {
+    pub fn spider_spawner() -> Box<MonsterSpawn + Send> {
         Box::new(SpiderSpawner {})
     }
 
-    fn derry_spawner() -> Box<MonsterSpawn> {
+    pub fn derry_spawner() -> Box<MonsterSpawn + Send> {
         Box::new(DerrySpawner {})
     }
 
-    fn creepy_uncle_spawner() -> Box<MonsterSpawn> {
+    pub fn creepy_uncle_spawner() -> Box<MonsterSpawn + Send> {
         Box::new(CreepyUncleSpawner {})
     }
 
-    fn mean_butler_spawner() -> Box<MonsterSpawn> {
+    pub fn mean_butler_spawner() -> Box<MonsterSpawn + Send> {
         Box::new(MeanButlerSpawner {})
     }
 
-    fn honey_badger_spawner() -> Box<MonsterSpawn> {
+    pub fn honey_badger_spawner() -> Box<MonsterSpawn + Send> {
         Box::new(HoneyBadgerSpawner {})
     }
 
-    fn mole_people_spawner(level: MolePeopleLevel) -> Box<MonsterSpawn> {
-        Box::new(MolePeopleSpawner { level })
+    pub fn mole_people_spawner(
+        level: MolePeopleLevel,
+        (min_pop, max_pop): (u8, u8),
+    ) -> Box<MonsterSpawn + Send> {
+        Box::new(MolePeopleSpawner {
+            level,
+            pop_range: (min_pop, max_pop),
+        })
     }
 
-    struct SpiderSpawner;
+    pub fn mole_high_priest_spawner() -> Box<MonsterSpawn + Send> {
+        Box::new(MoleHighPriestSpawner {})
+    }
+
+    pub fn mole_goliath_spawner() -> Box<MonsterSpawn + Send> {
+        Box::new(MoleGoliathSpawner {})
+    }
+
+    pub fn mole_queen_spawner() -> Box<MonsterSpawn + Send> {
+        Box::new(MoleQueenSpawner {})
+    }
+
+    pub fn homonculus_spawner() -> Box<MonsterSpawn + Send> {
+        Box::new(DerryHomonculusSpawner {})
+    }
+
+    pub fn composite_spawner(spawners: Vec<Box<MonsterSpawn + Send>>) -> Box<MonsterSpawn + Send> {
+        Box::new(CompositeSpawner::new(spawners))
+    }
+
+    pub fn null_spawner() -> Box<MonsterSpawn + Send> {
+        Box::new(NullSpawner {})
+    }
+
+    pub struct SpiderSpawner;
 
     impl SpiderSpawner {
         fn spawn_small_spider() -> Entity {
@@ -123,7 +153,7 @@ pub mod monster_spawners {
 
             let mut result: Vec<Entity> = vec![];
 
-            for i in 0..num_spiders {
+            for _ in 0..num_spiders {
                 result.push(SpiderSpawner::spawn_spider());
             }
 
@@ -131,7 +161,7 @@ pub mod monster_spawners {
         }
     }
 
-    struct DerrySpawner;
+    pub struct DerrySpawner;
 
     impl MonsterSpawn for DerrySpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
@@ -152,7 +182,7 @@ pub mod monster_spawners {
         }
     }
 
-    struct CreepyUncleSpawner;
+    pub struct CreepyUncleSpawner;
 
     impl MonsterSpawn for CreepyUncleSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
@@ -174,7 +204,7 @@ pub mod monster_spawners {
         }
     }
 
-    struct MeanButlerSpawner;
+    pub struct MeanButlerSpawner;
 
     impl MonsterSpawn for MeanButlerSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
@@ -198,7 +228,7 @@ pub mod monster_spawners {
         }
     }
 
-    struct HoneyBadgerSpawner;
+    pub struct HoneyBadgerSpawner;
 
     impl MonsterSpawn for HoneyBadgerSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
@@ -220,8 +250,9 @@ pub mod monster_spawners {
         }
     }
 
-    struct MolePeopleSpawner {
+    pub struct MolePeopleSpawner {
         level: MolePeopleLevel,
+        pop_range: (u8, u8),
     }
 
     pub enum MolePeopleLevel {
@@ -371,10 +402,10 @@ pub mod monster_spawners {
             }
         }
 
-        fn spawn_mole_person(level: MolePeopleLevel) -> Entity {
+        fn spawn_mole_person(level: &MolePeopleLevel) -> Entity {
             let val = thread_rng().gen_range(0u16, 100u16);
 
-            match level {
+            match *level {
                 MolePeopleLevel::Low => {
                     if val <= 60 {
                         return MolePeopleSpawner::spawn_mole_grunt();
@@ -384,177 +415,34 @@ pub mod monster_spawners {
                 }
                 MolePeopleLevel::Mid => {
                     if val <= 45 {
-                        return Entity {
-                            name: String::new(),
-                            attack: 0,
-                            defense: 0,
-                            regen: 0,
-                            health: 0,
-                            gold: 0,
-                            location: 0,
-                            alive: false,
-                            monster: false,
-                            desc: String::new(),
-                        };
+                        return MolePeopleSpawner::spawn_mole_grunt();
                     } else if val <= 70 {
-                        return Entity {
-                            name: String::new(),
-                            attack: 0,
-                            defense: 0,
-                            regen: 0,
-                            health: 0,
-                            gold: 0,
-                            location: 0,
-                            alive: false,
-                            monster: false,
-                            desc: String::new(),
-                        };
+                        return MolePeopleSpawner::spawn_mole_guard();
                     } else if val <= 80 {
-                        return Entity {
-                            name: String::new(),
-                            attack: 0,
-                            defense: 0,
-                            regen: 0,
-                            health: 0,
-                            gold: 0,
-                            location: 0,
-                            alive: false,
-                            monster: false,
-                            desc: String::new(),
-                        };
+                        return MolePeopleSpawner::spawn_mole_priest();
                     } else if val <= 90 {
-                        return Entity {
-                            name: String::new(),
-                            attack: 0,
-                            defense: 0,
-                            regen: 0,
-                            health: 0,
-                            gold: 0,
-                            location: 0,
-                            alive: false,
-                            monster: false,
-                            desc: String::new(),
-                        };
+                        return MolePeopleSpawner::spawn_fat_mole();
                     } else {
-                        return Entity {
-                            name: String::new(),
-                            attack: 0,
-                            defense: 0,
-                            regen: 0,
-                            health: 0,
-                            gold: 0,
-                            location: 0,
-                            alive: false,
-                            monster: false,
-                            desc: String::new(),
-                        };
+                        return MolePeopleSpawner::spawn_mole_warrior();
                     }
                 }
                 MolePeopleLevel::Hard => {
                     if val <= 30 {
-                        return Entity {
-                            name: String::new(),
-                            attack: 0,
-                            defense: 0,
-                            regen: 0,
-                            health: 0,
-                            gold: 0,
-                            location: 0,
-                            alive: false,
-                            monster: false,
-                            desc: String::new(),
-                        };
+                        return MolePeopleSpawner::spawn_mole_grunt();
                     } else if val <= 55 {
-                        return Entity {
-                            name: String::new(),
-                            attack: 0,
-                            defense: 0,
-                            regen: 0,
-                            health: 0,
-                            gold: 0,
-                            location: 0,
-                            alive: false,
-                            monster: false,
-                            desc: String::new(),
-                        };
+                        return MolePeopleSpawner::spawn_mole_guard();
                     } else if val <= 65 {
-                        return Entity {
-                            name: String::new(),
-                            attack: 0,
-                            defense: 0,
-                            regen: 0,
-                            health: 0,
-                            gold: 0,
-                            location: 0,
-                            alive: false,
-                            monster: false,
-                            desc: String::new(),
-                        };
+                        return MolePeopleSpawner::spawn_mole_priest();
                     } else if val <= 75 {
-                        return Entity {
-                            name: String::new(),
-                            attack: 0,
-                            defense: 0,
-                            regen: 0,
-                            health: 0,
-                            gold: 0,
-                            location: 0,
-                            alive: false,
-                            monster: false,
-                            desc: String::new(),
-                        };
+                        return MolePeopleSpawner::spawn_fat_mole();
                     } else if val <= 85 {
-                        return Entity {
-                            name: String::new(),
-                            attack: 0,
-                            defense: 0,
-                            regen: 0,
-                            health: 0,
-                            gold: 0,
-                            location: 0,
-                            alive: false,
-                            monster: false,
-                            desc: String::new(),
-                        };
+                        return MolePeopleSpawner::spawn_mole_warrior();
                     } else if val <= 90 {
-                        return Entity {
-                            name: String::new(),
-                            attack: 0,
-                            defense: 0,
-                            regen: 0,
-                            health: 0,
-                            gold: 0,
-                            location: 0,
-                            alive: false,
-                            monster: false,
-                            desc: String::new(),
-                        };
-                    } else if val <= 85 {
-                        return Entity {
-                            name: String::new(),
-                            attack: 0,
-                            defense: 0,
-                            regen: 0,
-                            health: 0,
-                            gold: 0,
-                            location: 0,
-                            alive: false,
-                            monster: false,
-                            desc: String::new(),
-                        };
+                        return MolePeopleSpawner::spawn_mole_high_priest();
+                    } else if val <= 95 {
+                        return MolePeopleSpawner::spawn_mole_goliath();
                     } else {
-                        return Entity {
-                            name: String::new(),
-                            attack: 0,
-                            defense: 0,
-                            regen: 0,
-                            health: 0,
-                            gold: 0,
-                            location: 0,
-                            alive: false,
-                            monster: false,
-                            desc: String::new(),
-                        };
+                        return MolePeopleSpawner::spawn_mole_queen();
                     }
                 }
             }
@@ -563,11 +451,44 @@ pub mod monster_spawners {
 
     impl MonsterSpawn for MolePeopleSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
-            unimplemented!()
+            let mut result = vec![];
+
+            let (min_moles, max_moles) = self.pop_range;
+            let num_moles = thread_rng().gen_range(min_moles, max_moles);
+
+            for _ in 0..num_moles {
+                result.push(MolePeopleSpawner::spawn_mole_person(&self.level));
+            }
+
+            result
         }
     }
 
-    struct DerryHomonculusSpawner;
+    pub struct MoleHighPriestSpawner;
+
+    impl MonsterSpawn for MoleHighPriestSpawner {
+        fn spawn_monsters(&mut self) -> Vec<Entity> {
+            vec![MolePeopleSpawner::spawn_mole_high_priest()]
+        }
+    }
+
+    pub struct MoleGoliathSpawner;
+
+    impl MonsterSpawn for MoleGoliathSpawner {
+        fn spawn_monsters(&mut self) -> Vec<Entity> {
+            vec![MolePeopleSpawner::spawn_mole_goliath()]
+        }
+    }
+
+    pub struct MoleQueenSpawner;
+
+    impl MonsterSpawn for MoleQueenSpawner {
+        fn spawn_monsters(&mut self) -> Vec<Entity> {
+            vec![MolePeopleSpawner::spawn_mole_queen()]
+        }
+    }
+
+    pub struct DerryHomonculusSpawner;
 
     impl MonsterSpawn for DerryHomonculusSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
@@ -588,6 +509,38 @@ pub mod monster_spawners {
                     ),
                 },
             ]
+        }
+    }
+
+    struct CompositeSpawner {
+        impl_spawners: Vec<Box<MonsterSpawn + Send>>,
+    }
+
+    impl CompositeSpawner {
+        pub fn new(spawners: Vec<Box<MonsterSpawn + Send>>) -> CompositeSpawner {
+            CompositeSpawner {
+                impl_spawners: spawners,
+            }
+        }
+    }
+
+    impl MonsterSpawn for CompositeSpawner {
+        fn spawn_monsters(&mut self) -> Vec<Entity> {
+            let mut result = vec![];
+
+            for spawner in self.impl_spawners.iter_mut() {
+                result.extend(spawner.spawn_monsters());
+            }
+
+            result
+        }
+    }
+
+    pub struct NullSpawner;
+
+    impl MonsterSpawn for NullSpawner {
+        fn spawn_monsters(&mut self) -> Vec<Entity> {
+            vec![]
         }
     }
 }

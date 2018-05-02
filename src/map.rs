@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use uuid::Uuid;
+use monster_spawn::MonsterSpawn;
+use entity::Entity;
 
 pub struct Map {
     rooms: HashMap<u16, Room>,
@@ -62,7 +64,7 @@ impl Map {
     }
 
     pub fn get_player_room_mut(&mut self, player_id: &Uuid) -> Option<&mut Room> {
-        for (room_id, room) in self.rooms.iter_mut() {
+        for (_, room) in self.rooms.iter_mut() {
             if room.has_player(&player_id) {
                 return Some(room);
             }
@@ -71,7 +73,7 @@ impl Map {
     }
 
     pub fn get_player_room(&self, player_id: &Uuid) -> Option<&Room> {
-        for (room_id, room) in self.rooms.iter() {
+        for (_, room) in self.rooms.iter() {
             if room.has_player(&player_id) {
                 return Some(room);
             }
@@ -80,7 +82,7 @@ impl Map {
     }
 
     pub fn has_player(&self, player_id: &Uuid) -> bool {
-        for (room_id, room) in self.rooms.iter() {
+        for (_, room) in self.rooms.iter() {
             if room.has_player(&player_id) {
                 return true;
             }
@@ -99,6 +101,8 @@ pub struct Room {
     adjacent_rooms: Vec<u16>, // room numbers
     num: u16,
     player_ids: HashSet<Uuid>,
+    spawner: Box<MonsterSpawn + Send>,
+    monsters : Vec<Entity>,
 }
 
 impl Room {
@@ -159,6 +163,7 @@ impl MapBuilder {
         &mut self,
         name: T,
         description: S,
+        monster_spawner: Box<MonsterSpawn + Send>,
     ) -> u16 {
         let room = Room {
             name: name.into(),
@@ -166,6 +171,8 @@ impl MapBuilder {
             adjacent_rooms: vec![],
             num: self.room_number,
             player_ids: HashSet::new(),
+            spawner: monster_spawner,
+            monsters : vec![],
         };
 
         self.buildee.rooms.insert(self.room_number, room);
