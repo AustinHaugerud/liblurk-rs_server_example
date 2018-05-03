@@ -136,5 +136,8 @@ pub fn handle_fight(lentity: &mut Entity, rentity: &mut Entity) -> String {
         }
     }
 
+    lentity.update_dirty = true;
+    rentity.update_dirty = true;
+
     fight_result_message
 }

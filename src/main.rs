@@ -264,7 +264,7 @@ impl ServerCallbacks for ExampleServer {
                     }
                     context.enqueue_message_this(player.get_character_packet());
 
-                    let mut monster_packets = player_room.get_monster_packets();
+                    let mut monster_packets = player_room.get_monster_packets(true);
 
                     for monster_packet in monster_packets.drain(..) {
                         context.enqueue_message_this(monster_packet);
@@ -328,7 +328,7 @@ impl ServerCallbacks for ExampleServer {
                             );
                         }
                     }
-                    for monster in room.get_monster_packets() {
+                    for monster in room.get_monster_packets(false) {
                         context.enqueue_message(monster, send_target.clone());
                     }
                     context.enqueue_message(
@@ -518,7 +518,7 @@ impl ServerCallbacks for ExampleServer {
                 }
 
                 if let Some(player_room) = self.map.get_player_room(&target_id) {
-                    for monster in player_room.get_monster_packets() {
+                    for monster in player_room.get_monster_packets(false) {
                         context.enqueue_message(monster, target_id.clone());
                     }
                 }

@@ -166,10 +166,10 @@ impl Room {
         self.monsters.extend(self.spawner.spawn_monsters());
     }
 
-    pub fn get_monster_packets(&self) -> Vec<Character> {
+    pub fn get_monster_packets(&self, force : bool) -> Vec<Character> {
         let mut result: Vec<Character> = vec![];
         for monster in self.monsters.iter() {
-            if monster.update_dirty {
+            if monster.update_dirty || force {
                 result.push(
                     Character::new(
                         monster.name.clone(),
