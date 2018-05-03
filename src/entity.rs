@@ -10,6 +10,7 @@ pub struct Entity {
     pub monster: bool,
     pub desc: String,
     pub base_health : i16,
+    pub update_dirty : bool,
 }
 
 impl Entity {
@@ -43,11 +44,12 @@ impl Entity {
     }
 
     pub fn regen(&mut self) {
-        if self.alive {
+        if self.alive && self.health != self.get_max_health() {
             let points = (self.get_effective_regen() as f32 / 10f32) as i16;
             println!("{} heal {} points.", self.name, points);
             self.health = (self.health + points).min(self.get_max_health());
             println!("Health is now {}.", self.health);
+            self.update_dirty = true;
         }
     }
 }

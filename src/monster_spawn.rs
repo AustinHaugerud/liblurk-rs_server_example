@@ -69,6 +69,7 @@ pub mod monster_spawners {
         fn spawn_small_spider() -> Entity {
             let mut gen = thread_rng();
             Entity {
+                update_dirty: false,
                 name: String::from("Small Spider"),
                 attack: 10,
                 defense: 75,
@@ -86,6 +87,7 @@ pub mod monster_spawners {
         fn spawn_medium_spider() -> Entity {
             let mut gen = thread_rng();
             Entity {
+                update_dirty: false,
                 name: String::from("Spider"),
                 attack: 30,
                 defense: 60,
@@ -103,6 +105,7 @@ pub mod monster_spawners {
         fn spawn_large_spider() -> Entity {
             let mut gen = thread_rng();
             Entity {
+                update_dirty: false,
                 name: String::from("Large Spider"),
                 attack: 75,
                 defense: 50,
@@ -120,6 +123,7 @@ pub mod monster_spawners {
         fn spawn_randy_spider() -> Entity {
             let mut gen = thread_rng();
             Entity {
+                update_dirty: false,
                 name: String::from("Big Randy the Smackdown Spider"),
                 attack: 200,
                 defense: 125,
@@ -171,6 +175,7 @@ pub mod monster_spawners {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
             vec![
                 Entity {
+                    update_dirty: false,
                     name: String::from("Derry"),
                     attack: 100,
                     defense: 100,
@@ -194,6 +199,7 @@ pub mod monster_spawners {
             let mut gen = thread_rng();
             vec![
                 Entity {
+                    update_dirty: false,
                     name: String::from("Creepy Uncle"),
                     attack: 75,
                     defense: 10,
@@ -217,6 +223,7 @@ pub mod monster_spawners {
             let mut gen = thread_rng();
             vec![
                 Entity {
+                    update_dirty: false,
                     name: String::from("Mean Butler"),
                     attack: 50,
                     defense: 10,
@@ -242,6 +249,7 @@ pub mod monster_spawners {
             let mut gen = thread_rng();
             vec![
                 Entity {
+                    update_dirty: false,
                     name: String::from("Honey Badger"),
                     attack: 350,
                     defense: 250,
@@ -274,6 +282,7 @@ pub mod monster_spawners {
         fn spawn_mole_grunt() -> Entity {
             let mut gen = thread_rng();
             Entity {
+                update_dirty: false,
                 name: String::from("Mole People Grunt"),
                 attack: 50,
                 defense: 100,
@@ -294,6 +303,7 @@ pub mod monster_spawners {
         fn spawn_mole_guard() -> Entity {
             let mut gen = thread_rng();
             Entity {
+                update_dirty: false,
                 name: String::from("Mole People Guard"),
                 attack: 75,
                 defense: 110,
@@ -312,6 +322,7 @@ pub mod monster_spawners {
         fn spawn_mole_priest() -> Entity {
             let mut gen = thread_rng();
             Entity {
+                update_dirty: false,
                 name: String::from("Mole People Priest"),
                 attack: 150,
                 defense: 200,
@@ -332,6 +343,7 @@ pub mod monster_spawners {
         fn spawn_fat_mole() -> Entity {
             let mut gen = thread_rng();
             Entity {
+                update_dirty: false,
                 name: String::from("Fat Mole Person"),
                 attack: 100,
                 defense: 300,
@@ -350,6 +362,7 @@ pub mod monster_spawners {
         fn spawn_mole_warrior() -> Entity {
             let mut gen = thread_rng();
             Entity {
+                update_dirty: false,
                 name: String::from("Mole People Warrior"),
                 attack: 200,
                 defense: 200,
@@ -368,6 +381,7 @@ pub mod monster_spawners {
         fn spawn_mole_high_priest() -> Entity {
             let mut gen = thread_rng();
             Entity {
+                update_dirty: false,
                 name: String::from("Mole People High Priest"),
                 attack: 300,
                 defense: 500,
@@ -386,6 +400,7 @@ pub mod monster_spawners {
         fn spawn_mole_goliath() -> Entity {
             let mut gen = thread_rng();
             Entity {
+                update_dirty: false,
                 name: String::from("Mole Goliath"),
                 attack: 500,
                 defense: 300,
@@ -404,6 +419,7 @@ pub mod monster_spawners {
         fn spawn_mole_queen() -> Entity {
             let mut gen = thread_rng();
             Entity {
+                update_dirty: false,
                 name: String::from("Mole People Queen"),
                 attack: 50,
                 defense: 1000,
@@ -511,6 +527,7 @@ pub mod monster_spawners {
             let mut gen = thread_rng();
             vec![
                 Entity {
+                    update_dirty: false,
                     name: String::from("Derry's Homonculus"),
                     attack: 1000,
                     defense: 1000,

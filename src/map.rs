@@ -107,6 +107,12 @@ impl Map {
             room.update_monsters();
         }
     }
+
+    pub fn clear_update_flags(&mut self) {
+        for (room_id, room) in self.rooms.iter_mut() {
+            room.clear_update_flag();
+        }
+    }
 }
 
 pub struct Room {
@@ -163,23 +169,25 @@ impl Room {
     pub fn get_monster_packets(&self) -> Vec<Character> {
         let mut result: Vec<Character> = vec![];
         for monster in self.monsters.iter() {
-            result.push(
-                Character::new(
-                    monster.name.clone(),
-                    monster.health > 0,
-                    true,
-                    true,
-                    true,
-                    true,
-                    monster.attack,
-                    monster.defense,
-                    monster.regen,
-                    monster.health,
-                    monster.gold,
-                    monster.location,
-                    monster.desc.clone(),
-                ).expect("Failed on monster to character packet."),
-            );
+            if monster.update_dirty {
+                result.push(
+                    Character::new(
+                        monster.name.clone(),
+                        monster.health > 0,
+                        true,
+                        true,
+                        true,
+                        true,
+                        monster.attack,
+                        monster.defense,
+                        monster.regen,
+                        monster.health,
+                        monster.gold,
+                        monster.location,
+                        monster.desc.clone(),
+                    ).expect("Failed on monster to character packet."),
+                );
+            }
         }
         result
     }
@@ -205,6 +213,12 @@ impl Room {
     pub fn update_monsters(&mut self) {
         for monster in self.monsters.iter_mut() {
             monster.regen();
+        }
+    }
+
+    pub fn clear_update_flag(&mut self) {
+        for monster in self.monsters.iter_mut() {
+            monster.update_dirty = false;
         }
     }
 }

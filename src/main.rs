@@ -139,6 +139,7 @@ impl ServerCallbacks for ExampleServer {
             context.get_client_id(),
             Player {
                 entity_info: Entity {
+                    update_dirty: false,
                     name: String::new(),
                     attack: 0,
                     defense: 0,
@@ -463,6 +464,7 @@ impl ServerCallbacks for ExampleServer {
                 let regen = (character.regeneration as f32 * regen_boost).floor() as u16;
 
                 player.entity_info = Entity {
+                    update_dirty: false,
                     name: character.player_name.clone(),
                     attack,
                     defense,
@@ -521,6 +523,7 @@ impl ServerCallbacks for ExampleServer {
                     }
                 }
             }
+            self.map.clear_update_flags();
         }
     }
 }
