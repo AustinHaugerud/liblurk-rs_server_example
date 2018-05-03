@@ -101,6 +101,12 @@ impl Map {
             room.remove_player(&id);
         }
     }
+
+    pub fn update_monsters(&mut self) {
+        for (room_id, room) in self.rooms.iter_mut() {
+            room.update_monsters();
+        }
+    }
 }
 
 pub struct Room {
@@ -194,6 +200,12 @@ impl Room {
             result.push(id.clone());
         }
         result
+    }
+
+    pub fn update_monsters(&mut self) {
+        for monster in self.monsters.iter_mut() {
+            monster.regen();
+        }
     }
 }
 

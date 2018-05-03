@@ -9,10 +9,11 @@ mod combat;
 
 use std::collections::HashMap;
 use std::net::{IpAddr, Ipv4Addr};
+use std::time::{Instant, Duration};
 
 use uuid::Uuid;
 
-use liblurk::server::server::{LurkServerError, Server, ServerCallbacks, ServerEventContext};
+use liblurk::server::server::{LurkServerError, Server, ServerCallbacks, ServerEventContext, UpdateContext};
 use liblurk::protocol::protocol_message::*;
 
 use map::{Map, MapBuilder};
@@ -71,6 +72,7 @@ impl Player {
 struct ExampleServer {
     players: HashMap<Uuid, Player>,
     map: Map,
+    last_update_time : Instant,
 }
 
 impl ExampleServer {
@@ -114,6 +116,7 @@ impl ExampleServer {
         ExampleServer {
             players: HashMap::new(),
             map,
+            last_update_time : Instant::now(),
         }
     }
 
@@ -492,6 +495,31 @@ impl ServerCallbacks for ExampleServer {
         println!("Leave packet received.");
         self.on_disconnect(client_id);
         Ok(())
+    }
+
+    fn update(&mut self, context : &UpdateContext) {
+        println!("Update.");
+        let current = Instant::now();
+        if current.duration_since(self.last_update_time) < Duration::from_secs(1) {
+            self.last_update_time = current;
+
+            for (player_id, player) in self.players.iter_mut() {
+                player.entity_info.regen();
+            }
+            self.map.update_monsters();
+
+            for (target_id, player) in self.players.iter() {
+                for (player_id, player) in self.players.iter() {
+                    context.enqueue_message(player.get_character_packet(), target_id.clone());
+                }
+
+                if let Some(player_room) = self.map.get_player_room(&target_id) {
+                    for monster in player_room.get_monster_packets() {
+                        context.enqueue_message(monster, target_id.clone());
+                    }
+                }
+            }
+        }
     }
 }
 
