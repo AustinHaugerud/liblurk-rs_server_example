@@ -590,6 +590,7 @@ impl ServerCallbacks for ExampleServer {
                     for monster in player_room.get_monster_packets(true) {
                         context.enqueue_message_this(monster);
                     }
+                    context.enqueue_message(player.get_character_packet(), player_id.clone());
                 }
             }
         }
