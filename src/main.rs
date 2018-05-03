@@ -20,6 +20,7 @@ use liblurk::protocol::protocol_message::*;
 use map::{Map, MapBuilder};
 use entity::*;
 use monster_spawn::monster_spawners;
+use monster_spawn::monster_spawners::MolePeopleLevel;
 
 const INITIAL_POINTS: u16 = 600;
 const STAT_LIMIT: u16 = u16::max_value();
@@ -83,17 +84,47 @@ impl ExampleServer {
         let entry_room_id = map_builder.register_room(
             "Entry Room",
             "This room seems to be the entrance.",
-            monster_spawners::null_spawner(),
+            monster_spawners::mean_butler_spawner(),
         );
         let basement_id =
-            map_builder.register_room("Basement", "It's very dark, and there seems to be some gross old canned food. It looks like there's a dumbweighter to the attic.", monster_spawners::null_spawner());
+            map_builder.register_room("Basement", "It's very dark, and there seems to be some gross old canned food. It looks like there's a dumbweighter to the attic.", monster_spawners::derry_spawner());
         let parlor_id = map_builder.register_room(
             "Parlor",
             "There's a mess of old furniture and music.",
-            monster_spawners::null_spawner(),
+            monster_spawners::creepy_uncle_spawner(),
         );
         let attic_id =
             map_builder.register_room("Attic", "Eek! There's some big spiders up here! There seems to be a dumbweighter to the basement.", monster_spawners::spider_spawner());
+
+        let badger_den = map_builder.register_room("Badger Den", "A honey badger seems to taken refuge here", monster_spawners::honey_badger_spawner());
+        let cavern_hall = map_builder.register_room("Cavern Hall", "A hallway piece of the cavern", monster_spawners::mole_people_spawner(MolePeopleLevel::Low, (3, 5)));
+        let barracks_north = map_builder.register_room("Mole Barracks North", "The north wing of the mole barracks.", monster_spawners::mole_people_spawner(MolePeopleLevel::Low, (3, 8)));
+        let barracks_east = map_builder.register_room("Mole Barracks East", "The east wing of the mole barracks.", monster_spawners::mole_people_spawner(MolePeopleLevel::Low, (4, 10)));
+        let barracks_west = map_builder.register_room("Mole Barracks West", "The west wing of the mole barracks.", monster_spawners::mole_people_spawner(MolePeopleLevel::Low, (5, 10)));
+        let pit = map_builder.register_room("Pit", "A dark pit filled with spiders.", monster_spawners::spider_spawner());
+        let nursery = map_builder.register_room("Mole Nursery", "A disgusting nursery cavern filled with mole people.", monster_spawners::mole_people_spawner(MolePeopleLevel::Low, (15, 20)));
+        let cache = map_builder.register_room("Cache", "A cavern serving as a food cache.", monster_spawners::mole_people_spawner(MolePeopleLevel::Mid, (5, 8)));
+        let cavern = map_builder.register_room("Cavern", "A cavern filled with mole people.", monster_spawners::mole_people_spawner(MolePeopleLevel::Mid, (15, 20)));
+        let deep_cavern = map_builder.register_room("Deep Cavern", "Another deeper cavern filled with yet more mole people.", monster_spawners::composite_spawner(
+            vec![monster_spawners::mole_people_spawner(MolePeopleLevel::Mid, (15, 20)), monster_spawners::mole_high_priest_spawner()]
+        ));
+        let mole_grounds = map_builder.register_room("Mole Grounds", "A large living area of the mole people.", monster_spawners::mole_people_spawner(MolePeopleLevel::Hard, (15, 20)));
+        let spawn_grounds = map_builder.register_room("Spawn Grounds", "A spawning grounds where the queens spawn more moles.", monster_spawners::composite_spawner(
+            vec![monster_spawners::mole_queen_spawner(), monster_spawners::mole_people_spawner(MolePeopleLevel::Hard, (25, 30))]
+        ));
+        let mole_pit_west = map_builder.register_room("Mole Pit West", "The west mole pit.", monster_spawners::mole_people_spawner(MolePeopleLevel::Hard, (10, 12)));
+        let mole_pit_east = map_builder.register_room("Mole Pit East", "The east mole pit.", monster_spawners::mole_people_spawner(MolePeopleLevel::Hard, (10, 12)));
+        let mole_pit_south = map_builder.register_room("Mole Pit South", "The south mole pit.", monster_spawners::mole_people_spawner(MolePeopleLevel::Hard, (10, 12)));
+        let temple = map_builder.register_room("Mole Temple", "A cavern temple it seems.", monster_spawners::composite_spawner(
+            vec![monster_spawners::mole_high_priest_spawner(), monster_spawners::mole_people_spawner(MolePeopleLevel::Hard, (30, 35))]
+        ));
+        let goliath_gate = map_builder.register_room("Goliath Gate", "The goliath guards here!", monster_spawners::composite_spawner(
+            vec![monster_spawners::great_mole_goliath_spawner(), monster_spawners::mole_people_spawner(MolePeopleLevel::Hard, (5, 10))]
+        ));
+        let pit_of_queens = map_builder.register_room("Pit of Queens", "The queens rule from here.", monster_spawners::composite_spawner(
+            vec![monster_spawners::pit_of_queens_spawner(), monster_spawners::mole_people_spawner(MolePeopleLevel::Mid, (40, 50))]
+        ));
+        let cavern_end = map_builder.register_room("Cavern End", "This is the end, the smell is awful.", monster_spawners::homonculus_spawner());
 
         map_builder
             .link_rooms(entry_room_id, parlor_id)
@@ -107,6 +138,27 @@ impl ExampleServer {
         map_builder
             .link_rooms(attic_id, basement_id)
             .expect("Failed to link attic and basement.");
+
+        map_builder.link_rooms(basement_id, badger_den).unwrap();
+        map_builder.link_rooms(badger_den, cavern_hall).unwrap();
+        map_builder.link_rooms(badger_den, barracks_north).unwrap();
+        map_builder.link_rooms(badger_den, cavern).unwrap();
+        map_builder.link_rooms(barracks_north, barracks_east).unwrap();
+        map_builder.link_rooms(barracks_north, barracks_west).unwrap();
+        map_builder.link_rooms(barracks_east, barracks_west).unwrap();
+        map_builder.link_rooms(cavern_hall, pit).unwrap();
+        map_builder.link_rooms(cavern_hall, nursery).unwrap();
+        map_builder.link_rooms(cavern_hall, cache).unwrap();
+        map_builder.link_rooms(cavern, deep_cavern).unwrap();
+        map_builder.link_rooms(deep_cavern, mole_grounds).unwrap();
+        map_builder.link_rooms(mole_grounds, spawn_grounds).unwrap();
+        map_builder.link_rooms(mole_grounds, mole_pit_west).unwrap();
+        map_builder.link_rooms(mole_grounds, mole_pit_east).unwrap();
+        map_builder.link_rooms(mole_grounds, mole_pit_south).unwrap();
+        map_builder.link_rooms(mole_grounds, temple).unwrap();
+        map_builder.link_rooms(temple, goliath_gate).unwrap();
+        map_builder.link_rooms(goliath_gate, pit_of_queens).unwrap();
+        map_builder.link_rooms(pit_of_queens, cavern_end).unwrap();
 
         map_builder
             .set_start_room(entry_room_id)

@@ -29,6 +29,10 @@ pub mod monster_spawners {
         Box::new(HoneyBadgerSpawner {})
     }
 
+    pub fn pit_of_queens_spawner() -> Box<MonsterSpawn + Send> {
+        Box::new(PitOfQueensSpawner{})
+    }
+
     pub fn mole_people_spawner(
         level: MolePeopleLevel,
         (min_pop, max_pop): (u8, u8),
@@ -45,6 +49,10 @@ pub mod monster_spawners {
 
     pub fn mole_goliath_spawner() -> Box<MonsterSpawn + Send> {
         Box::new(MoleGoliathSpawner {})
+    }
+
+    pub fn great_mole_goliath_spawner() -> Box<MonsterSpawn + Send> {
+        Box::new(GreatMoleGoliathSpawner{})
     }
 
     pub fn mole_queen_spawner() -> Box<MonsterSpawn + Send> {
@@ -519,11 +527,40 @@ pub mod monster_spawners {
         }
     }
 
+    pub struct GreatMoleGoliathSpawner;
+
+    impl MonsterSpawn for GreatMoleGoliathSpawner {
+        fn spawn_monsters(&mut self) -> Vec<Entity> {
+            let mut base = MolePeopleSpawner::spawn_mole_goliath();
+            base.attack = 1000;
+            base.defense = 1000;
+            base.regen = 300;
+            base.name = "Great Mole Goliath".to_string();
+            base.desc = "A titanic mole goliath.".to_string();
+            vec![base]
+        }
+    }
+
     pub struct MoleQueenSpawner;
 
     impl MonsterSpawn for MoleQueenSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
             vec![MolePeopleSpawner::spawn_mole_queen()]
+        }
+    }
+
+    pub struct PitOfQueensSpawner;
+
+    impl MonsterSpawn for PitOfQueensSpawner {
+        fn spawn_monsters(&mut self) -> Vec<Entity> {
+            let mut result = vec![];
+            let mut counter = 0;
+            for i in 0..7 {
+                let mut base = MolePeopleSpawner::spawn_mole_queen();
+                base.name = format!("{} {}", base.name, i + 1).to_owned();
+                result.push(base);
+            }
+            result
         }
     }
 
