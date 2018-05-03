@@ -158,6 +158,7 @@ impl ServerCallbacks for ExampleServer {
     fn on_disconnect(&mut self, client_id: &Uuid) {
         println!("Disconnect made.");
         self.players.remove(client_id);
+        self.map.clear_player(&client_id);
     }
 
     fn on_message(
@@ -446,9 +447,12 @@ impl ServerCallbacks for ExampleServer {
 
                 player.ready = true;
 
-                let attack_boost = (1.25f32 * (character.attack as f32 / INITIAL_POINTS as f32)).max(1f32);
-                let defense_boost = (1.25f32 * (character.defense as f32 / INITIAL_POINTS as f32)).max(1f32);
-                let regen_boost = (1.25f32 * (character.regeneration as f32 / INITIAL_POINTS as f32)).max(1f32);
+                let attack_boost =
+                    (1.25f32 * (character.attack as f32 / INITIAL_POINTS as f32)).max(1f32);
+                let defense_boost =
+                    (1.25f32 * (character.defense as f32 / INITIAL_POINTS as f32)).max(1f32);
+                let regen_boost =
+                    (1.25f32 * (character.regeneration as f32 / INITIAL_POINTS as f32)).max(1f32);
 
                 let attack = (character.attack as f32 * attack_boost).floor() as u16;
                 let defense = (character.defense as f32 * defense_boost).floor() as u16;

@@ -95,6 +95,12 @@ impl Map {
     pub fn has_room(&self, room_id: &u16) -> bool {
         self.rooms.contains_key(&room_id)
     }
+
+    pub fn clear_player(&mut self, id: &Uuid) {
+        for (room_id, room) in self.rooms.iter_mut() {
+            room.remove_player(&id);
+        }
+    }
 }
 
 pub struct Room {
