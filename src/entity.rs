@@ -9,6 +9,7 @@ pub struct Entity {
     pub alive: bool,
     pub monster: bool,
     pub desc: String,
+    pub base_health : i16,
 }
 
 impl Entity {
@@ -34,7 +35,7 @@ impl Entity {
     }
 
     pub fn get_max_health(&self) -> i16 {
-        (500f32 * self.get_gold_skill_multiplier()) as i16
+        (self.base_health as f32 * self.get_gold_skill_multiplier()) as i16
     }
 
     pub fn regen(&mut self) {

@@ -79,6 +79,7 @@ pub mod monster_spawners {
                 alive: true,
                 monster: true,
                 desc: String::from("A small spider, probably can only you hurt you a little. They're nimble however!"),
+                base_health : 50,
             }
         }
 
@@ -95,6 +96,7 @@ pub mod monster_spawners {
                 alive: true,
                 monster: true,
                 desc: String::from("A kind of big spider, it'd probably hurt if it bit you."),
+                base_health : 125,
             }
         }
 
@@ -111,6 +113,7 @@ pub mod monster_spawners {
                 alive: true,
                 monster: true,
                 desc: String::from("I don't think your shoe is big enough for this."),
+                base_health: 200,
             }
         }
 
@@ -127,6 +130,7 @@ pub mod monster_spawners {
                 alive: true,
                 monster: true,
                 desc: String::from("Big Randy gives fools the smackdown."),
+                base_health: 200,
             }
         }
 
@@ -177,6 +181,7 @@ pub mod monster_spawners {
                     alive: true,
                     monster: true,
                     desc: String::from("He seems to have lost his mind in a caffeine overdose."),
+                    base_health: 200,
                 },
             ]
         }
@@ -199,6 +204,7 @@ pub mod monster_spawners {
                     alive: true,
                     monster: true,
                     desc: String::from("\"Come give your uncle a hug buddy\""),
+                    base_health: 200,
                 },
             ]
         }
@@ -223,6 +229,7 @@ pub mod monster_spawners {
                     desc: String::from(
                         "The butler seems to very strongly believe you should be somewhere else.",
                     ),
+                    base_health: 100,
                 },
             ]
         }
@@ -245,6 +252,7 @@ pub mod monster_spawners {
                     alive: true,
                     monster: true,
                     desc: String::from("This is the honey badger."),
+                    base_health: 1000,
                 },
             ]
         }
@@ -278,6 +286,7 @@ pub mod monster_spawners {
                 desc: String::from(
                     "A grunt committed to the labor of the mole people civilization.",
                 ),
+                base_health: 150,
             }
         }
 
@@ -295,6 +304,7 @@ pub mod monster_spawners {
                 alive: true,
                 monster: true,
                 desc: String::from("A guard of the mole people."),
+                base_health : 175,
             }
         }
 
@@ -314,6 +324,7 @@ pub mod monster_spawners {
                 desc: String::from(
                     "A priest of the mole people, spreading the glory of The Great Abomination.",
                 ),
+                base_health: 250,
             }
         }
 
@@ -331,6 +342,7 @@ pub mod monster_spawners {
                 alive: true,
                 monster: true,
                 desc: String::from("A puss ridden mole person of great girth."),
+                base_health: 500,
             }
         }
 
@@ -348,6 +360,7 @@ pub mod monster_spawners {
                 alive: true,
                 monster: true,
                 desc: String::from("A warrior of the mole people."),
+                base_health: 325,
             }
         }
 
@@ -365,6 +378,7 @@ pub mod monster_spawners {
                 alive: true,
                 monster: true,
                 desc: String::from("One of the great high priests of the mole people."),
+                base_health: 750,
             }
         }
 
@@ -382,6 +396,7 @@ pub mod monster_spawners {
                 alive: true,
                 monster: true,
                 desc: String::from("A hulking mole goliath."),
+                base_health: 1250,
             }
         }
 
@@ -399,6 +414,7 @@ pub mod monster_spawners {
                 alive: true,
                 monster: true,
                 desc: String::from("A disgusting mother of the mole people, she'll spawn minions to guard her until she's dead!"),
+                base_health: 1750,
             }
         }
 
@@ -507,6 +523,7 @@ pub mod monster_spawners {
                     desc: String::from(
                         "It's a hideous titanic deformed humanoid, with a resemblance to Derry.",
                     ),
+                    base_health: 3000,
                 },
             ]
         }

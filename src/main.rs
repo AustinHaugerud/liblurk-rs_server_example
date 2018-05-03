@@ -149,6 +149,7 @@ impl ServerCallbacks for ExampleServer {
                     alive: false,
                     monster: false,
                     desc: String::new(),
+                    base_health : DEFAULT_HEALTH,
                 },
                 ready: false,
                 started: false,
@@ -472,6 +473,7 @@ impl ServerCallbacks for ExampleServer {
                     alive: true,
                     monster: false,
                     desc: character.description.clone(),
+                    base_health : DEFAULT_HEALTH,
                 };
 
                 context.enqueue_message_this(player.get_character_packet());
