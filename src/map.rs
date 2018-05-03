@@ -193,13 +193,37 @@ impl Room {
     }
 
     pub fn get_random_monster_mut(&mut self) -> Option<&mut Entity> {
-        if self.monsters.is_empty() {
+        if self.monsters.is_empty() || self.all_monsters_dead() {
             return None;
         }
 
-        let idx = thread_rng().gen_range(0, self.monsters.len() - 1);
+        let alive_monster_indices = self.get_alive_monsters_indices();
 
-        self.monsters.get_mut(idx)
+        let idx = thread_rng().gen_range(0, alive_monster_indices.len() - 1);
+
+        let monster_idx = alive_monster_indices[idx];
+        self.monsters.get_mut(monster_idx)
+    }
+
+    fn get_alive_monsters_indices(&self) -> Vec<usize> {
+        let mut result = vec![];
+        for i in 0..self.monsters.len() {
+            if self.monsters.get(i).unwrap().alive {
+                result.push(i);
+            }
+        }
+        result
+    }
+
+    fn all_monsters_dead(&self) -> bool {
+        let mut result = true;
+        for monster in self.monsters.iter() {
+            if !monster.alive {
+                result = false;
+                break;
+            }
+        }
+        result
     }
 
     pub fn get_player_ids(&self) -> Vec<Uuid> {
