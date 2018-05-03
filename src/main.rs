@@ -476,6 +476,15 @@ impl ServerCallbacks for ExampleServer {
                         ).unwrap(),
                     );
                 }
+
+                for player_id in player_room.get_player_ids() {
+                    if let Some(player) = self.players.get(&player_id) {
+                        context.enqueue_message_this(player.get_character_packet());
+                    }
+                }
+                for monster in player_room.get_monster_packets(true) {
+                    context.enqueue_message_this(monster);
+                }
             } else {
                 context.enqueue_message_this(
                     Error::not_ready("You are not ready to start.".to_string()).unwrap(),
