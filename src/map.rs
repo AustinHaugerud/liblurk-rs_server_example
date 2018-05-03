@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use uuid::Uuid;
 use monster_spawn::MonsterSpawn;
 use entity::Entity;
+use liblurk::protocol::protocol_message::Character;
 
 pub struct Map {
     rooms: HashMap<u16, Room>,
@@ -141,6 +142,32 @@ impl Room {
     pub fn get_adjacent_rooms(&self) -> &Vec<u16> {
         &self.adjacent_rooms
     }
+
+    pub fn run_spawner(&mut self) {
+        self.monsters.extend(self.spawner.spawn_monsters());
+    }
+
+    pub fn get_monster_packets(&self) -> Vec<Character> {
+        let mut result = vec![];
+        for monster in self.monsters.iter() {
+            result.push(Character::new(
+                monster.name.clone(),
+                monster.health > 0,
+                true,
+                true,
+                true,
+                true,
+                monster.attack,
+                monster.defense,
+                monster.regen,
+                monster.health,
+                monster.gold,
+                monster.location,
+                monster.desc,
+            ));
+        }
+        result
+    }
 }
 
 pub struct MapBuilder {
@@ -213,6 +240,10 @@ impl MapBuilder {
 
     pub fn complete(self) -> Result<Map, ()> {
         if self.buildee.start_room_id != 0 {
+            for (_, room) in self.buildee.rooms.iter_mut() {
+                room.run_spawner();
+            }
+
             return Ok(self.buildee);
         }
         Err(())

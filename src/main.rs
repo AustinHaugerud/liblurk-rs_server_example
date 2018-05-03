@@ -89,7 +89,7 @@ impl ExampleServer {
             monster_spawners::null_spawner(),
         );
         let attic_id =
-            map_builder.register_room("Attic", "Eek! There's some big spiders up here! There seems to be a dumbweighter to the basement.", monster_spawners::null_spawner());
+            map_builder.register_room("Attic", "Eek! There's some big spiders up here! There seems to be a dumbweighter to the basement.", monster_spawners::spider_spawner());
 
         map_builder
             .link_rooms(entry_room_id, parlor_id)
@@ -171,7 +171,8 @@ impl ServerCallbacks for ExampleServer {
         } else {
             println!("On message: bad target.");
             context.enqueue_message_this(
-                Error::no_target("Message target does not exist.".to_string()).unwrap());
+                Error::no_target("Message target does not exist.".to_string()).unwrap(),
+            );
         }
 
         println!("On message completed.");
@@ -187,24 +188,28 @@ impl ServerCallbacks for ExampleServer {
         if let Some(player) = self.players.get_mut(&context.get_client_id()) {
             if !player.started {
                 context.enqueue_message_this(
-                    Error::not_ready("You have not started yet.".to_string()).unwrap());
+                    Error::not_ready("You have not started yet.".to_string()).unwrap(),
+                );
 
                 context.enqueue_message_this(
-                    Error::not_ready("You have not started yet.".to_string()).unwrap());
+                    Error::not_ready("You have not started yet.".to_string()).unwrap(),
+                );
 
                 return Ok(());
             }
 
             if !self.map.has_player(&player.id) {
                 context.enqueue_message_this(
-                    Error::other("Internal server error: Player not in map.".to_string()).unwrap());
+                    Error::other("Internal server error: Player not in map.".to_string()).unwrap(),
+                );
 
                 return Ok(());
             }
 
             if !self.map.has_room(&change_room.room_number) {
-                context
-                    .enqueue_message_this(Error::bad_room("Room does not exist.".to_string()).unwrap());
+                context.enqueue_message_this(
+                    Error::bad_room("Room does not exist.".to_string()).unwrap(),
+                );
 
                 return Ok(());
             }
@@ -214,8 +219,9 @@ impl ServerCallbacks for ExampleServer {
                 .unwrap()
                 .is_adjacent_to(change_room.room_number)
             {
-                context
-                    .enqueue_message_this(Error::bad_room("Room is not ahead.".to_string()).unwrap());
+                context.enqueue_message_this(
+                    Error::bad_room("Room is not ahead.".to_string()).unwrap(),
+                );
 
                 return Ok(());
             }
@@ -248,9 +254,13 @@ impl ServerCallbacks for ExampleServer {
                                 adj_room.get_description(),
                             ).unwrap(),
                         );
+                    }
+                    context.enqueue_message_this(player.get_character_packet());
 
-                        context
-                            .enqueue_message_this(player.get_character_packet());
+                    let mut monster_packets = player_room.get_monster_packets();
+
+                    for monster_packet in monster_packets.drain(..) {
+                        context.enqueue_message_this(monster_packet);
                     }
                 }
                 Err(e) => {
@@ -294,8 +304,7 @@ impl ServerCallbacks for ExampleServer {
 
     fn on_loot(&mut self, context: &mut ServerEventContext, _: &Loot) -> LurkServerError {
         println!("Loot packet received.");
-        context
-            .enqueue_message_this(Error::no_target("Cannot loot yet.".to_string()).unwrap());
+        context.enqueue_message_this(Error::no_target("Cannot loot yet.".to_string()).unwrap());
         Ok(())
     }
 
@@ -303,8 +312,9 @@ impl ServerCallbacks for ExampleServer {
         println!("Start packet received.");
         if let Some(player) = self.players.get_mut(&context.get_client_id()) {
             if player.started {
-                context
-                    .enqueue_message_this(Error::other("You've already started.".to_string()).unwrap());
+                context.enqueue_message_this(
+                    Error::other("You've already started.".to_string()).unwrap(),
+                );
                 println!("Enqueued you've already started message.");
                 return Ok(());
             }
@@ -314,8 +324,7 @@ impl ServerCallbacks for ExampleServer {
                 player.entity_info.location = self.map.get_start_room().get_number();
                 self.map.get_start_room_mut().place_player(&player.id);
 
-                context
-                    .enqueue_message_this(player.get_character_packet());
+                context.enqueue_message_this(player.get_character_packet());
                 println!("Enqueued character packet.");
 
                 let player_room = self.map
@@ -385,8 +394,7 @@ impl ServerCallbacks for ExampleServer {
         if let Some(player) = self.players.get_mut(&context.get_client_id()) {
             if !player.started {
                 println!("Accept character!");
-                context
-                    .enqueue_message_this(Accept::new(CHARACTER_TYPE));
+                context.enqueue_message_this(Accept::new(CHARACTER_TYPE));
                 println!("Accept enqueued!");
 
                 player.ready = true;
@@ -403,8 +411,7 @@ impl ServerCallbacks for ExampleServer {
                     desc: character.description.clone(),
                 };
 
-                context
-                    .enqueue_message_this(player.get_character_packet());
+                context.enqueue_message_this(player.get_character_packet());
             } else {
                 context.enqueue_message_this(
                     Error::other("Your stats cannot be edited at this time.".to_string()).unwrap(),
