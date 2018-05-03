@@ -40,6 +40,7 @@ pub mod monster_spawners {
         Box::new(MolePeopleSpawner {
             level,
             pop_range: (min_pop, max_pop),
+            counter: 0,
         })
     }
 
@@ -284,6 +285,7 @@ pub mod monster_spawners {
     pub struct MolePeopleSpawner {
         level: MolePeopleLevel,
         pop_range: (u8, u8),
+        counter : u32,
     }
 
     pub enum MolePeopleLevel {
@@ -293,12 +295,18 @@ pub mod monster_spawners {
     }
 
     impl MolePeopleSpawner {
+
+        fn number(&mut self) -> u32 {
+            self.counter += 1;
+            self.counter
+        }
+
         // 30 percent chance
-        fn spawn_mole_grunt() -> Entity {
+        fn spawn_mole_grunt(&mut self) -> Entity {
             let mut gen = thread_rng();
             Entity {
                 update_dirty: true,
-                name: String::from("Mole People Grunt"),
+                name: String::from(format!("Mole People Grunt {}", self.number())),
                 attack: 50,
                 defense: 100,
                 regen: 20,
@@ -315,11 +323,11 @@ pub mod monster_spawners {
         }
 
         // 25 percent chance
-        fn spawn_mole_guard() -> Entity {
+        fn spawn_mole_guard(&mut self) -> Entity {
             let mut gen = thread_rng();
             Entity {
                 update_dirty: true,
-                name: String::from("Mole People Guard"),
+                name: String::from(format!("Mole People Guard {}", self.number())),
                 attack: 75,
                 defense: 110,
                 regen: 30,
@@ -334,11 +342,11 @@ pub mod monster_spawners {
         }
 
         // 10 percent chance
-        fn spawn_mole_priest() -> Entity {
+        fn spawn_mole_priest(&mut self) -> Entity {
             let mut gen = thread_rng();
             Entity {
                 update_dirty: true,
-                name: String::from("Mole People Priest"),
+                name: String::from(format!("Mole People Priest {}", self.number())),
                 attack: 150,
                 defense: 200,
                 regen: 100,
@@ -355,11 +363,11 @@ pub mod monster_spawners {
         }
 
         // 10 percent chance
-        fn spawn_fat_mole() -> Entity {
+        fn spawn_fat_mole(&mut self) -> Entity {
             let mut gen = thread_rng();
             Entity {
                 update_dirty: true,
-                name: String::from("Fat Mole Person"),
+                name: String::from(format!("Fat Mole Person {}", self.number())),
                 attack: 100,
                 defense: 300,
                 regen: 100,
@@ -374,11 +382,11 @@ pub mod monster_spawners {
         }
 
         // 10 percent chance
-        fn spawn_mole_warrior() -> Entity {
+        fn spawn_mole_warrior(&mut self) -> Entity {
             let mut gen = thread_rng();
             Entity {
                 update_dirty: true,
-                name: String::from("Mole People Warrior"),
+                name: String::from(format!("Mole People Warrior {}", self.number())),
                 attack: 200,
                 defense: 200,
                 regen: 50,
@@ -393,11 +401,11 @@ pub mod monster_spawners {
         }
 
         // 5 percent chance
-        fn spawn_mole_high_priest() -> Entity {
+        fn spawn_mole_high_priest(&mut self) -> Entity {
             let mut gen = thread_rng();
             Entity {
                 update_dirty: true,
-                name: String::from("Mole People High Priest"),
+                name: String::from(format!("Mole People High Priest {}", self.number())),
                 attack: 300,
                 defense: 500,
                 regen: 200,
@@ -412,11 +420,11 @@ pub mod monster_spawners {
         }
 
         // 5 percent chance
-        fn spawn_mole_goliath() -> Entity {
+        fn spawn_mole_goliath(&mut self) -> Entity {
             let mut gen = thread_rng();
             Entity {
                 update_dirty: true,
-                name: String::from("Mole Goliath"),
+                name: String::from(format!("Mole Goliath {}", self.number())),
                 attack: 500,
                 defense: 300,
                 regen: 250,
@@ -431,11 +439,11 @@ pub mod monster_spawners {
         }
 
         // 5 percent
-        fn spawn_mole_queen() -> Entity {
+        fn spawn_mole_queen(&mut self) -> Entity {
             let mut gen = thread_rng();
             Entity {
                 update_dirty: true,
-                name: String::from("Mole People Queen"),
+                name: String::from(format!("Mole People Queen {}", self.number())),
                 attack: 50,
                 defense: 1000,
                 regen: 400,
@@ -449,47 +457,47 @@ pub mod monster_spawners {
             }
         }
 
-        fn spawn_mole_person(level: &MolePeopleLevel) -> Entity {
+        fn spawn_mole_person(&mut self, level: &MolePeopleLevel) -> Entity {
             let val = thread_rng().gen_range(0u16, 100u16);
 
             match *level {
                 MolePeopleLevel::Low => {
                     if val <= 60 {
-                        return MolePeopleSpawner::spawn_mole_grunt();
+                        return self.spawn_mole_grunt();
                     } else {
-                        return MolePeopleSpawner::spawn_mole_guard();
+                        return self.spawn_mole_guard();
                     }
                 }
                 MolePeopleLevel::Mid => {
                     if val <= 45 {
-                        return MolePeopleSpawner::spawn_mole_grunt();
+                        return self.spawn_mole_grunt();
                     } else if val <= 70 {
-                        return MolePeopleSpawner::spawn_mole_guard();
+                        return self.spawn_mole_guard();
                     } else if val <= 80 {
-                        return MolePeopleSpawner::spawn_mole_priest();
+                        return self.spawn_mole_priest();
                     } else if val <= 90 {
-                        return MolePeopleSpawner::spawn_fat_mole();
+                        return self.spawn_fat_mole();
                     } else {
-                        return MolePeopleSpawner::spawn_mole_warrior();
+                        return self.spawn_mole_warrior();
                     }
                 }
                 MolePeopleLevel::Hard => {
                     if val <= 30 {
-                        return MolePeopleSpawner::spawn_mole_grunt();
+                        return self.spawn_mole_grunt();
                     } else if val <= 55 {
-                        return MolePeopleSpawner::spawn_mole_guard();
+                        return self.spawn_mole_guard();
                     } else if val <= 65 {
-                        return MolePeopleSpawner::spawn_mole_priest();
+                        return self.spawn_mole_priest();
                     } else if val <= 75 {
-                        return MolePeopleSpawner::spawn_fat_mole();
+                        return self.spawn_fat_mole();
                     } else if val <= 85 {
-                        return MolePeopleSpawner::spawn_mole_warrior();
+                        return self.spawn_mole_warrior();
                     } else if val <= 90 {
-                        return MolePeopleSpawner::spawn_mole_high_priest();
+                        return self.spawn_mole_high_priest();
                     } else if val <= 95 {
-                        return MolePeopleSpawner::spawn_mole_goliath();
+                        return self.spawn_mole_goliath();
                     } else {
-                        return MolePeopleSpawner::spawn_mole_queen();
+                        return self.spawn_mole_queen();
                     }
                 }
             }
@@ -504,7 +512,11 @@ pub mod monster_spawners {
             let num_moles = thread_rng().gen_range(min_moles, max_moles);
 
             for _ in 0..num_moles {
-                result.push(MolePeopleSpawner::spawn_mole_person(&self.level));
+                result.push(MolePeopleSpawner{
+                    level: MolePeopleLevel::Hard,
+                    pop_range: (0, 0),
+                    counter: 0,
+                }.spawn_mole_person(&self.level));
             }
 
             result
@@ -515,7 +527,11 @@ pub mod monster_spawners {
 
     impl MonsterSpawn for MoleHighPriestSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
-            vec![MolePeopleSpawner::spawn_mole_high_priest()]
+            vec![MolePeopleSpawner{
+                level: MolePeopleLevel::Hard,
+                pop_range: (0, 0),
+                counter: 0,
+            }.spawn_mole_high_priest()]
         }
     }
 
@@ -523,7 +539,11 @@ pub mod monster_spawners {
 
     impl MonsterSpawn for MoleGoliathSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
-            vec![MolePeopleSpawner::spawn_mole_goliath()]
+            vec![MolePeopleSpawner{
+                level: MolePeopleLevel::Hard,
+                pop_range: (0, 0),
+                counter: 0,
+            }.spawn_mole_goliath()]
         }
     }
 
@@ -531,7 +551,11 @@ pub mod monster_spawners {
 
     impl MonsterSpawn for GreatMoleGoliathSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
-            let mut base = MolePeopleSpawner::spawn_mole_goliath();
+            let mut base = MolePeopleSpawner{
+                level: MolePeopleLevel::Hard,
+                pop_range: (0, 0),
+                counter: 0,
+            }.spawn_mole_goliath();
             base.attack = 1000;
             base.defense = 1000;
             base.regen = 300;
@@ -545,7 +569,11 @@ pub mod monster_spawners {
 
     impl MonsterSpawn for MoleQueenSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
-            vec![MolePeopleSpawner::spawn_mole_queen()]
+            vec![MolePeopleSpawner{
+                level: MolePeopleLevel::Hard,
+                pop_range: (0, 0),
+                counter: 0,
+            }.spawn_mole_queen()]
         }
     }
 
@@ -556,7 +584,11 @@ pub mod monster_spawners {
             let mut result = vec![];
             let mut counter = 0;
             for i in 0..7 {
-                let mut base = MolePeopleSpawner::spawn_mole_queen();
+                let mut base = MolePeopleSpawner{
+                    level: MolePeopleLevel::Hard,
+                    pop_range: (0, 0),
+                    counter: 0,
+                }.spawn_mole_queen();
                 base.name = format!("{} {}", base.name, i + 1).to_owned();
                 result.push(base);
             }
