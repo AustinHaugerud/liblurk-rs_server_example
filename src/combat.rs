@@ -16,6 +16,8 @@ fn get_hit_chance(attack: u16, defense: u16) -> f32 {
 fn get_damage(attack: u16, defense: u16) -> f32 {
     let min_damage = (attack as f32 - (defense as f32 * 1.5)).min(attack as f32 * 0.1);
     let max_damage = attack as f32;
+    println!("Min dmg: {}", min_damage);
+    println!("Max dmg: {}", max_damage);
     thread_rng().gen_range(min_damage, max_damage)
 }
 
@@ -40,7 +42,7 @@ pub fn handle_fight(lentity: &mut Entity, rentity: &mut Entity) -> String {
             ) {
             let dmg = get_damage(lentity.attack, rentity.defense);
             fight_result_message
-                .push_str(format!("They hit for {} damage!\n", dmg as u16).as_str());
+                .push_str(format!("They hit for {} damage!\n", dmg.floor()).as_str());
             rentity.health = (rentity.health - dmg as i16).min(0i16);
             if rentity.health == 0 {
                 rentity.alive = false;
@@ -60,7 +62,7 @@ pub fn handle_fight(lentity: &mut Entity, rentity: &mut Entity) -> String {
                 ) {
                 let dmg = get_damage(rentity.attack, lentity.defense);
                 fight_result_message
-                    .push_str(format!("They hit for {} damage!\n", dmg as u16).as_str());
+                    .push_str(format!("They hit for {} damage!\n", dmg.floor()).as_str());
                 lentity.health = (lentity.health - dmg as i16).min(0i16);
                 if lentity.health == 0 {
                     lentity.alive = false;
@@ -81,7 +83,7 @@ pub fn handle_fight(lentity: &mut Entity, rentity: &mut Entity) -> String {
             ) {
             let dmg = get_damage(rentity.attack, lentity.defense);
             fight_result_message
-                .push_str(format!("They hit for {} damage!\n", dmg as u16).as_str());
+                .push_str(format!("They hit for {} damage!\n", dmg.floor()).as_str());
             lentity.health = (lentity.health - dmg as i16).min(0i16);
             if lentity.health == 0 {
                 lentity.alive = false;
@@ -101,7 +103,7 @@ pub fn handle_fight(lentity: &mut Entity, rentity: &mut Entity) -> String {
                 ) {
                 let dmg = get_damage(lentity.attack, rentity.defense);
                 fight_result_message
-                    .push_str(format!("They hit for {} damage!\n", dmg as u16).as_str());
+                    .push_str(format!("They hit for {} damage!\n", dmg.floor()).as_str());
                 rentity.health = (rentity.health - dmg as i16).min(0i16);
                 if rentity.health == 0 {
                     rentity.alive = false;
