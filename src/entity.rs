@@ -35,6 +35,10 @@ impl Entity {
     }
 
     pub fn get_max_health(&self) -> i16 {
+        if self.monster {
+            return self.base_health;
+        }
+
         (self.base_health as f32 * self.get_gold_skill_multiplier()) as i16
     }
 
