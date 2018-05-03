@@ -218,7 +218,7 @@ impl Room {
     fn all_monsters_dead(&self) -> bool {
         let mut result = true;
         for monster in self.monsters.iter() {
-            if !monster.alive {
+            if monster.alive {
                 result = false;
                 break;
             }
