@@ -130,7 +130,7 @@ pub mod monster_spawners {
                 alive: true,
                 monster: true,
                 desc: String::from("Big Randy gives fools the smackdown."),
-                base_health: 200,
+                base_health: 750,
             }
         }
 
