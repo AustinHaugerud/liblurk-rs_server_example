@@ -427,7 +427,7 @@ pub mod monster_spawners {
                 update_dirty: true,
                 name: String::from(format!("Mole Goliath {}", self.number())),
                 attack: 500,
-                defense: 300,
+                defense: 500,
                 regen: 250,
                 health: 1250,
                 gold: gen.gen_range(500u16, 800u16),
@@ -445,7 +445,7 @@ pub mod monster_spawners {
             Entity {
                 update_dirty: true,
                 name: String::from(format!("Mole People Queen {}", self.number())),
-                attack: 50,
+                attack: 400,
                 defense: 1000,
                 regen: 400,
                 health: 1750,
