@@ -148,23 +148,25 @@ impl Room {
     }
 
     pub fn get_monster_packets(&self) -> Vec<Character> {
-        let mut result = vec![];
+        let mut result: Vec<Character> = vec![];
         for monster in self.monsters.iter() {
-            result.push(Character::new(
-                monster.name.clone(),
-                monster.health > 0,
-                true,
-                true,
-                true,
-                true,
-                monster.attack,
-                monster.defense,
-                monster.regen,
-                monster.health,
-                monster.gold,
-                monster.location,
-                monster.desc,
-            ));
+            result.push(
+                Character::new(
+                    monster.name.clone(),
+                    monster.health > 0,
+                    true,
+                    true,
+                    true,
+                    true,
+                    monster.attack,
+                    monster.defense,
+                    monster.regen,
+                    monster.health,
+                    monster.gold,
+                    monster.location,
+                    monster.desc.clone(),
+                ).expect("Failed on monster to character packet."),
+            );
         }
         result
     }
@@ -238,7 +240,7 @@ impl MapBuilder {
         Ok(())
     }
 
-    pub fn complete(self) -> Result<Map, ()> {
+    pub fn complete(mut self) -> Result<Map, ()> {
         if self.buildee.start_room_id != 0 {
             for (_, room) in self.buildee.rooms.iter_mut() {
                 room.run_spawner();
