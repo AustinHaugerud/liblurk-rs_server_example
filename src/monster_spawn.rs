@@ -30,7 +30,7 @@ pub mod monster_spawners {
     }
 
     pub fn pit_of_queens_spawner() -> Box<MonsterSpawn + Send> {
-        Box::new(PitOfQueensSpawner{})
+        Box::new(PitOfQueensSpawner {})
     }
 
     pub fn mole_people_spawner(
@@ -52,7 +52,7 @@ pub mod monster_spawners {
     }
 
     pub fn great_mole_goliath_spawner() -> Box<MonsterSpawn + Send> {
-        Box::new(GreatMoleGoliathSpawner{})
+        Box::new(GreatMoleGoliathSpawner {})
     }
 
     pub fn mole_queen_spawner() -> Box<MonsterSpawn + Send> {
