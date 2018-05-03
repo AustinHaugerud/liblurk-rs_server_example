@@ -4,6 +4,7 @@ use uuid::Uuid;
 use monster_spawn::MonsterSpawn;
 use entity::Entity;
 use liblurk::protocol::protocol_message::Character;
+use rand::*;
 
 pub struct Map {
     rooms: HashMap<u16, Room>,
@@ -167,6 +168,24 @@ impl Room {
                     monster.desc.clone(),
                 ).expect("Failed on monster to character packet."),
             );
+        }
+        result
+    }
+
+    pub fn get_random_monster_mut(&mut self) -> Option<&mut Entity> {
+        if self.monsters.is_empty() {
+            return None;
+        }
+
+        let idx = thread_rng().gen_range(0, self.monsters.len() - 1);
+
+        self.monsters.get_mut(idx)
+    }
+
+    pub fn get_player_ids(&self) -> Vec<Uuid> {
+        let mut result = vec![];
+        for id in self.player_ids.iter() {
+            result.push(id.clone());
         }
         result
     }

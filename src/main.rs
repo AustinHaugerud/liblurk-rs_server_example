@@ -5,6 +5,7 @@ extern crate uuid;
 mod map;
 mod entity;
 mod monster_spawn;
+mod combat;
 
 use std::collections::HashMap;
 use std::net::{IpAddr, Ipv4Addr};
@@ -56,9 +57,9 @@ impl Player {
             false,
             self.started,
             self.ready,
-            self.entity_info.attack,
-            self.entity_info.defense,
-            self.entity_info.regen,
+            self.entity_info.get_effective_attack(),
+            self.entity_info.get_effective_defense(),
+            self.entity_info.get_effective_regen(),
             self.entity_info.health,
             self.entity_info.gold,
             self.entity_info.location,
@@ -281,10 +282,41 @@ impl ServerCallbacks for ExampleServer {
     fn on_fight(&mut self, context: &mut ServerEventContext, fight: &Fight) -> LurkServerError {
         println!("Fight packet received.");
 
-        if let Some(player) = self.players.get(&context.get_client_id()) {
-            context.enqueue_message_this(player.get_character_packet());
+        let mut fight_result_message : Option<String> = None;
+
+        if let Some(player) = self.players.get_mut(&context.get_client_id()) {
+
+            if !player.started {
+                context.enqueue_message_this(Error::not_ready("You have not started.".to_string()).unwrap());
+            }
+
+            if let Some(room) = self.map.get_player_room_mut(&context.get_client_id()) {
+                if let Some(monster) = room.get_random_monster_mut() {
+                    fight_result_message = Some(combat::handle_fight(&mut player.entity_info, monster));
+                } else {
+                    context.enqueue_message_this(Error::no_target("There are no enemies in this room.".to_string()).unwrap());
+                }
+            }
+            else {
+                context.enqueue_message_this(Error::other("Internal server error: Started player not placed in room.".to_string()).unwrap());
+            }
         } else {
-            println!("On Fight Error: untracked player");
+            println!("On Fight Error: Untracked player");
+        }
+
+        if let Some(message) = fight_result_message {
+            if let Some(room) = self.map.get_player_room(&context.get_client_id()) {
+                for send_target in room.get_player_ids() {
+                    for player_id in room.get_player_ids() {
+                        if let Some(player) = self.players.get(&player_id) {
+                            context.enqueue_message(player.get_character_packet(), send_target.clone());
+                        }
+                    }
+                    for monster in room.get_monster_packets() {
+                        context.enqueue_message(monster, send_target.clone());
+                    }
+                }
+            }
         }
 
         return Ok(());
