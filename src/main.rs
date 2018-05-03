@@ -9,11 +9,12 @@ mod combat;
 
 use std::collections::HashMap;
 use std::net::{IpAddr, Ipv4Addr};
-use std::time::{Instant, Duration};
+use std::time::{Duration, Instant};
 
 use uuid::Uuid;
 
-use liblurk::server::server::{LurkServerError, Server, ServerCallbacks, ServerEventContext, UpdateContext};
+use liblurk::server::server::{LurkServerError, Server, ServerCallbacks, ServerEventContext,
+                              UpdateContext};
 use liblurk::protocol::protocol_message::*;
 
 use map::{Map, MapBuilder};
@@ -72,7 +73,7 @@ impl Player {
 struct ExampleServer {
     players: HashMap<Uuid, Player>,
     map: Map,
-    last_update_time : Instant,
+    last_update_time: Instant,
 }
 
 impl ExampleServer {
@@ -116,7 +117,7 @@ impl ExampleServer {
         ExampleServer {
             players: HashMap::new(),
             map,
-            last_update_time : Instant::now(),
+            last_update_time: Instant::now(),
         }
     }
 
@@ -150,7 +151,7 @@ impl ServerCallbacks for ExampleServer {
                     alive: false,
                     monster: false,
                     desc: String::new(),
-                    base_health : DEFAULT_HEALTH,
+                    base_health: DEFAULT_HEALTH,
                 },
                 ready: false,
                 started: false,
@@ -355,17 +356,23 @@ impl ServerCallbacks for ExampleServer {
         Ok(())
     }
 
-    fn on_loot(&mut self, context: &mut ServerEventContext, loot : &Loot) -> LurkServerError {
+    fn on_loot(&mut self, context: &mut ServerEventContext, loot: &Loot) -> LurkServerError {
         println!("Loot packet received.");
 
         if let Some(player) = self.players.get_mut(&context.get_client_id()) {
             if let Some(room) = self.map.get_player_room_mut(&context.get_client_id()) {
-                if let Some(gold) = room.loot_monster(&loot.target) {
-                    player.entity_info.gold += gold;
+                if let Some(mut monster) = room.loot_monster(&loot.target) {
+                    player.entity_info.gold += monster.gold;
+                    monster.gold = 0;
                     player.entity_info.update_dirty = true;
-                }
-                else {
-                    context.enqueue_message_this(Error::no_target("Invalid target".to_string()).unwrap());
+
+                    for player_id in room.get_player_ids() {
+                        context.enqueue_message(monster.clone(), player_id.clone());
+                    }
+                } else {
+                    context.enqueue_message_this(
+                        Error::no_target("Invalid target".to_string()).unwrap(),
+                    );
                 }
             }
         }
@@ -487,7 +494,7 @@ impl ServerCallbacks for ExampleServer {
                     alive: true,
                     monster: false,
                     desc: character.description.clone(),
-                    base_health : DEFAULT_HEALTH,
+                    base_health: DEFAULT_HEALTH,
                 };
 
                 context.enqueue_message_this(player.get_character_packet());
@@ -513,9 +520,9 @@ impl ServerCallbacks for ExampleServer {
         Ok(())
     }
 
-    fn update(&mut self, context : &UpdateContext) {
+    fn update(&mut self, context: &UpdateContext) {
         let current = Instant::now();
-        if current.duration_since(self.last_update_time) > Duration::from_secs(1 ) {
+        if current.duration_since(self.last_update_time) > Duration::from_secs(1) {
             println!("Update: {:?}", current);
             self.last_update_time = current;
 
@@ -529,7 +536,10 @@ impl ServerCallbacks for ExampleServer {
                     for player_id in player_room.get_player_ids() {
                         if let Some(player) = self.players.get(&player_id) {
                             if player.entity_info.update_dirty {
-                                context.enqueue_message(player.get_character_packet(), target_id.clone());
+                                context.enqueue_message(
+                                    player.get_character_packet(),
+                                    target_id.clone(),
+                                );
                             }
                         }
                     }

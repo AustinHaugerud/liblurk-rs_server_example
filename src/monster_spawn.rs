@@ -10,7 +10,7 @@ pub mod monster_spawners {
     use rand::{thread_rng, Rng};
 
     pub fn spider_spawner() -> Box<MonsterSpawn + Send> {
-        Box::new(SpiderSpawner { counter : 0})
+        Box::new(SpiderSpawner { counter: 0 })
     }
 
     pub fn derry_spawner() -> Box<MonsterSpawn + Send> {
@@ -64,11 +64,10 @@ pub mod monster_spawners {
     }
 
     pub struct SpiderSpawner {
-        counter : u32,
+        counter: u32,
     }
 
     impl SpiderSpawner {
-
         fn number(&mut self) -> u32 {
             self.counter += 1;
             self.counter
@@ -106,7 +105,7 @@ pub mod monster_spawners {
                 alive: true,
                 monster: true,
                 desc: String::from("A kind of big spider, it'd probably hurt if it bit you."),
-                base_health : 125,
+                base_health: 125,
             }
         }
 
@@ -322,7 +321,7 @@ pub mod monster_spawners {
                 alive: true,
                 monster: true,
                 desc: String::from("A guard of the mole people."),
-                base_health : 175,
+                base_health: 175,
             }
         }
 

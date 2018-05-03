@@ -166,7 +166,7 @@ impl Room {
         self.monsters.extend(self.spawner.spawn_monsters());
     }
 
-    pub fn get_monster_packets(&self, force : bool) -> Vec<Character> {
+    pub fn get_monster_packets(&self, force: bool) -> Vec<Character> {
         let mut result: Vec<Character> = vec![];
         for monster in self.monsters.iter() {
             if monster.update_dirty || force {
@@ -209,15 +209,31 @@ impl Room {
         self.monsters.get_mut(monster_idx)
     }
 
-    pub fn loot_monster(&mut self, target : &String) -> Option<u16> {
+    pub fn loot_monster(&mut self, target: &String) -> Option<Character> {
         if let Some(monster_index) = self.get_monster_index(&target) {
             let monster = self.monsters.remove(monster_index);
-            return Some(monster.gold);
+            return Some(
+                Character::new(
+                    monster.name.clone(),
+                    monster.health > 0,
+                    true,
+                    true,
+                    true,
+                    true,
+                    monster.attack,
+                    monster.defense,
+                    monster.regen,
+                    monster.health,
+                    monster.gold,
+                    monster.location,
+                    monster.desc.clone(),
+                ).unwrap(),
+            );
         }
         None
     }
 
-    fn get_monster_index(&self, target : &String) -> Option<usize> {
+    fn get_monster_index(&self, target: &String) -> Option<usize> {
         for i in 0..self.monsters.len() {
             if self.monsters.get(i).unwrap().name == *target {
                 return Some(i);

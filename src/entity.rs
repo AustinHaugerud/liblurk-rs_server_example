@@ -9,8 +9,8 @@ pub struct Entity {
     pub alive: bool,
     pub monster: bool,
     pub desc: String,
-    pub base_health : i16,
-    pub update_dirty : bool,
+    pub base_health: i16,
+    pub update_dirty: bool,
 }
 
 impl Entity {
