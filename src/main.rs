@@ -282,23 +282,30 @@ impl ServerCallbacks for ExampleServer {
     fn on_fight(&mut self, context: &mut ServerEventContext, fight: &Fight) -> LurkServerError {
         println!("Fight packet received.");
 
-        let mut fight_result_message : Option<String> = None;
+        let mut fight_result_message: Option<String> = None;
 
         if let Some(player) = self.players.get_mut(&context.get_client_id()) {
-
             if !player.started {
-                context.enqueue_message_this(Error::not_ready("You have not started.".to_string()).unwrap());
+                context.enqueue_message_this(
+                    Error::not_ready("You have not started.".to_string()).unwrap(),
+                );
             }
 
             if let Some(room) = self.map.get_player_room_mut(&context.get_client_id()) {
                 if let Some(monster) = room.get_random_monster_mut() {
-                    fight_result_message = Some(combat::handle_fight(&mut player.entity_info, monster));
+                    fight_result_message =
+                        Some(combat::handle_fight(&mut player.entity_info, monster));
                 } else {
-                    context.enqueue_message_this(Error::no_target("There are no enemies in this room.".to_string()).unwrap());
+                    context.enqueue_message_this(
+                        Error::no_target("There are no enemies in this room.".to_string()).unwrap(),
+                    );
                 }
-            }
-            else {
-                context.enqueue_message_this(Error::other("Internal server error: Started player not placed in room.".to_string()).unwrap());
+            } else {
+                context.enqueue_message_this(
+                    Error::other(
+                        "Internal server error: Started player not placed in room.".to_string(),
+                    ).unwrap(),
+                );
             }
         } else {
             println!("On Fight Error: Untracked player");
@@ -309,12 +316,20 @@ impl ServerCallbacks for ExampleServer {
                 for send_target in room.get_player_ids() {
                     for player_id in room.get_player_ids() {
                         if let Some(player) = self.players.get(&player_id) {
-                            context.enqueue_message(player.get_character_packet(), send_target.clone());
+                            context.enqueue_message(
+                                player.get_character_packet(),
+                                send_target.clone(),
+                            );
                         }
                     }
                     for monster in room.get_monster_packets() {
                         context.enqueue_message(monster, send_target.clone());
                     }
+                    context.enqueue_message(
+                        Message::new(message.clone(), "Server".to_string(), "You".to_string())
+                            .unwrap(),
+                        send_target.clone(),
+                    );
                 }
             }
         }

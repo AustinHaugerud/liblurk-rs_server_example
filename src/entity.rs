@@ -17,7 +17,7 @@ impl Entity {
         let boost = (self.gold as f32 * 0.01f32);
         match self.monster {
             true => 1f32,
-            false => 1f32 + boost
+            false => 1f32 + boost,
         }
     }
 
@@ -39,7 +39,8 @@ impl Entity {
 
     pub fn regen(&mut self) {
         if self.alive {
-            self.health = (self.health + (self.get_effective_regen() as f32 / 10f32) as i16).max(self.get_max_health());
+            self.health = (self.health + (self.get_effective_regen() as f32 / 10f32) as i16)
+                .max(self.get_max_health());
         }
     }
 }
