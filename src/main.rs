@@ -586,11 +586,11 @@ impl ServerCallbacks for ExampleServer {
                         if let Some(player) = self.players.get(&player_id) {
                             context.enqueue_message_this(player.get_character_packet());
                         }
+                        context.enqueue_message(player.get_character_packet(), player_id.clone());
                     }
                     for monster in player_room.get_monster_packets(true) {
                         context.enqueue_message_this(monster);
                     }
-                    context.enqueue_message(player.get_character_packet(), player_id.clone());
                 }
             }
         }
