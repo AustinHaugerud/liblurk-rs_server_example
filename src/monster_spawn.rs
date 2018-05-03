@@ -10,7 +10,7 @@ pub mod monster_spawners {
     use rand::{thread_rng, Rng};
 
     pub fn spider_spawner() -> Box<MonsterSpawn + Send> {
-        Box::new(SpiderSpawner {})
+        Box::new(SpiderSpawner { counter : 0})
     }
 
     pub fn derry_spawner() -> Box<MonsterSpawn + Send> {
@@ -63,14 +63,22 @@ pub mod monster_spawners {
         Box::new(NullSpawner {})
     }
 
-    pub struct SpiderSpawner;
+    pub struct SpiderSpawner {
+        counter : u32,
+    }
 
     impl SpiderSpawner {
-        fn spawn_small_spider() -> Entity {
+
+        fn number(&mut self) -> u32 {
+            self.counter += 1;
+            self.counter
+        }
+
+        fn spawn_small_spider(&mut self) -> Entity {
             let mut gen = thread_rng();
             Entity {
                 update_dirty: true,
-                name: String::from("Small Spider"),
+                name: String::from(format!("Small Spider {}", self.number())),
                 attack: 10,
                 defense: 75,
                 regen: 5,
@@ -84,11 +92,11 @@ pub mod monster_spawners {
             }
         }
 
-        fn spawn_medium_spider() -> Entity {
+        fn spawn_medium_spider(&mut self) -> Entity {
             let mut gen = thread_rng();
             Entity {
                 update_dirty: true,
-                name: String::from("Spider"),
+                name: String::from(format!("Spider {}", self.number())),
                 attack: 30,
                 defense: 60,
                 regen: 10,
@@ -102,11 +110,11 @@ pub mod monster_spawners {
             }
         }
 
-        fn spawn_large_spider() -> Entity {
+        fn spawn_large_spider(&mut self) -> Entity {
             let mut gen = thread_rng();
             Entity {
                 update_dirty: true,
-                name: String::from("Large Spider"),
+                name: String::from(format!("Large Spider {}", self.number())),
                 attack: 75,
                 defense: 50,
                 regen: 25,
@@ -120,11 +128,11 @@ pub mod monster_spawners {
             }
         }
 
-        fn spawn_randy_spider() -> Entity {
+        fn spawn_randy_spider(&mut self) -> Entity {
             let mut gen = thread_rng();
             Entity {
                 update_dirty: true,
-                name: String::from("Big Randy the Smackdown Spider"),
+                name: String::from(format!("Big Randy the Smackdown Spider {}", self.number())),
                 attack: 200,
                 defense: 125,
                 regen: 50,
@@ -138,19 +146,19 @@ pub mod monster_spawners {
             }
         }
 
-        fn spawn_spider() -> Entity {
+        fn spawn_spider(&mut self) -> Entity {
             let mut gen = thread_rng();
 
             let val = gen.gen_range(0u16, 1000u16);
 
             if val <= 500 {
-                return SpiderSpawner::spawn_small_spider();
+                return self.spawn_small_spider();
             } else if val <= 700 {
-                return SpiderSpawner::spawn_medium_spider();
+                return self.spawn_medium_spider();
             } else if val <= 900 {
-                return SpiderSpawner::spawn_large_spider();
+                return self.spawn_large_spider();
             }
-            SpiderSpawner::spawn_randy_spider()
+            self.spawn_randy_spider()
         }
     }
 
@@ -162,7 +170,7 @@ pub mod monster_spawners {
             let mut result: Vec<Entity> = vec![];
 
             for _ in 0..num_spiders {
-                result.push(SpiderSpawner::spawn_spider());
+                result.push(self.spawn_spider());
             }
 
             result
