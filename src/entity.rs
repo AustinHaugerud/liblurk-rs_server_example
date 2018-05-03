@@ -45,7 +45,7 @@ impl Entity {
 
     pub fn regen(&mut self) {
         if self.alive && self.health != self.get_max_health() {
-            let points = (self.get_effective_regen() as f32 / 10f32) as i16;
+            let points = ((self.get_effective_regen() as f32 / 50f32) as i16).max(1);
             println!("{} heal {} points.", self.name, points);
             self.health = (self.health + points).min(self.get_max_health());
             println!("Health is now {}.", self.health);
