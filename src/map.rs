@@ -203,6 +203,10 @@ impl Room {
 
         let alive_monster_indices = self.get_alive_monsters_indices();
 
+        if alive_monster_indices.len() == 1 {
+            return Some(alive_monster_indices.get(0));
+        }
+
         let idx = thread_rng().gen_range(0, alive_monster_indices.len() - 1);
 
         let monster_idx = alive_monster_indices[idx];
