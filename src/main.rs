@@ -305,6 +305,7 @@ impl ServerCallbacks for ExampleServer {
             if player.started {
                 context
                     .enqueue_message_this(Error::other("You've already started.".to_string()).unwrap());
+                println!("Enqueued you've already started message.");
                 return Ok(());
             }
 
@@ -315,6 +316,7 @@ impl ServerCallbacks for ExampleServer {
 
                 context
                     .enqueue_message_this(player.get_character_packet());
+                println!("Enqueued character packet.");
 
                 let player_room = self.map
                     .get_player_room(&player.id)
