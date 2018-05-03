@@ -498,9 +498,9 @@ impl ServerCallbacks for ExampleServer {
     }
 
     fn update(&mut self, context : &UpdateContext) {
-        println!("Update.");
         let current = Instant::now();
         if current.duration_since(self.last_update_time) > Duration::from_secs(1 ) {
+            println!("Update.");
             self.last_update_time = current;
 
             for (player_id, player) in self.players.iter_mut() {
