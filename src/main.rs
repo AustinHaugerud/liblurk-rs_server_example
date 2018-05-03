@@ -20,7 +20,7 @@ use map::{Map, MapBuilder};
 use entity::*;
 use monster_spawn::monster_spawners;
 
-const INITIAL_POINTS: u16 = 300;
+const INITIAL_POINTS: u16 = 600;
 const STAT_LIMIT: u16 = u16::max_value();
 
 const DEFAULT_HEALTH: i16 = 500;
@@ -355,9 +355,21 @@ impl ServerCallbacks for ExampleServer {
         Ok(())
     }
 
-    fn on_loot(&mut self, context: &mut ServerEventContext, _: &Loot) -> LurkServerError {
+    fn on_loot(&mut self, context: &mut ServerEventContext, loot : &Loot) -> LurkServerError {
         println!("Loot packet received.");
-        context.enqueue_message_this(Error::no_target("Cannot loot yet.".to_string()).unwrap());
+
+        if let Some(player) = self.players.get_mut(&context.get_client_id()) {
+            if let Some(room) = self.map.get_player_room_mut(&context.get_client_id()) {
+                if let Some(gold) = room.loot_monster(&loot.target) {
+                    player.entity_info.gold += gold;
+                    player.entity_info.update_dirty = true;
+                }
+                else {
+                    context.enqueue_message_this(Error::no_target("Invalid target".to_string()).unwrap());
+                }
+            }
+        }
+
         Ok(())
     }
 
@@ -513,17 +525,25 @@ impl ServerCallbacks for ExampleServer {
             self.map.update_monsters();
 
             for (target_id, player) in self.players.iter() {
-                for (player_id, player) in self.players.iter() {
-                    context.enqueue_message(player.get_character_packet(), target_id.clone());
-                }
-
                 if let Some(player_room) = self.map.get_player_room(&target_id) {
+                    for player_id in player_room.get_player_ids() {
+                        if let Some(player) = self.players.get(&player_id) {
+                            if player.entity_info.update_dirty {
+                                context.enqueue_message(player.get_character_packet(), target_id.clone());
+                            }
+                        }
+                    }
+
                     for monster in player_room.get_monster_packets(false) {
                         context.enqueue_message(monster, target_id.clone());
                     }
                 }
             }
             self.map.clear_update_flags();
+
+            for (player_id, player) in self.players.iter_mut() {
+                player.entity_info.update_dirty = false;
+            }
         }
     }
 }

@@ -209,6 +209,23 @@ impl Room {
         self.monsters.get_mut(monster_idx)
     }
 
+    pub fn loot_monster(&mut self, target : &String) -> Option<u16> {
+        if let Some(monster_index) = self.get_monster_index(&target) {
+            let monster = self.monsters.remove(monster_index);
+            return Some(monster.gold);
+        }
+        None
+    }
+
+    fn get_monster_index(&self, target : &String) -> Option<usize> {
+        for i in 0..self.monsters.len() {
+            if self.monsters.get(i).unwrap().name == *target {
+                return Some(i);
+            }
+        }
+        None
+    }
+
     fn get_alive_monsters_indices(&self) -> Vec<usize> {
         let mut result = vec![];
         for i in 0..self.monsters.len() {
