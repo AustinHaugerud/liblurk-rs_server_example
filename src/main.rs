@@ -19,8 +19,8 @@ use map::{Map, MapBuilder};
 use entity::*;
 use monster_spawn::monster_spawners;
 
-const INITIAL_POINTS: u16 = 100;
-const STAT_LIMIT: u16 = 100;
+const INITIAL_POINTS: u16 = 300;
+const STAT_LIMIT: u16 = u16::max_value();
 
 const DEFAULT_HEALTH: i16 = 500;
 const DEFAULT_GOLD: u16 = 0;
@@ -445,11 +445,20 @@ impl ServerCallbacks for ExampleServer {
                 println!("Accept enqueued!");
 
                 player.ready = true;
+
+                let attack_boost = (1.25f32 * (character.attack as f32 / INITIAL_POINTS as f32)).max(1f32);
+                let defense_boost = (1.25f32 * (character.defense as f32 / INITIAL_POINTS as f32)).max(1f32);
+                let regen_boost = (1.25f32 * (character.regeneration as f32 / INITIAL_POINTS as f32)).max(1f32);
+
+                let attack = (character.attack as f32 * attack_boost).floor() as u16;
+                let defense = (character.defense as f32 * defense_boost).floor() as u16;
+                let regen = (character.regeneration as f32 * regen_boost).floor() as u16;
+
                 player.entity_info = Entity {
                     name: character.player_name.clone(),
-                    attack: character.attack,
-                    defense: character.defense,
-                    regen: character.regeneration,
+                    attack,
+                    defense,
+                    regen,
                     health: DEFAULT_HEALTH,
                     gold: DEFAULT_GOLD,
                     location: 0,
