@@ -288,6 +288,7 @@ pub mod monster_spawners {
         counter : u32,
     }
 
+    #[derive(Clone)]
     pub enum MolePeopleLevel {
         Low,
         Mid,
@@ -506,17 +507,16 @@ pub mod monster_spawners {
 
     impl MonsterSpawn for MolePeopleSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
+
+            let level = self.level.clone();
+
             let mut result = vec![];
 
             let (min_moles, max_moles) = self.pop_range;
             let num_moles = thread_rng().gen_range(min_moles, max_moles);
 
             for _ in 0..num_moles {
-                result.push(MolePeopleSpawner{
-                    level: MolePeopleLevel::Hard,
-                    pop_range: (0, 0),
-                    counter: 0,
-                }.spawn_mole_person(&self.level));
+                result.push(self.spawn_mole_person(&level));
             }
 
             result
