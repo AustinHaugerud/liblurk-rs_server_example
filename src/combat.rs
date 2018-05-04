@@ -14,9 +14,14 @@ fn get_hit_chance(attack: u16, defense: u16) -> f32 {
 
 fn get_damage(attack: u16, defense: u16) -> f32 {
     let min_damage = (attack as f32 - (defense as f32 * 1.5)).max(attack as f32 * 0.1);
-    let max_damage = attack as f32;
+    let mut max_damage = attack as f32;
     println!("Min dmg: {}", min_damage);
     println!("Max dmg: {}", max_damage);
+
+    if max_damage <= min_damage {
+        max_damage = min_damage + 1f32;
+    }
+
     thread_rng().gen_range(min_damage, max_damage)
 }
 
