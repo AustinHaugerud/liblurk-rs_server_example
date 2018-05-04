@@ -1,6 +1,5 @@
 use entity::Entity;
-use std::num;
-use rand::{thread_rng, Rand, Rng};
+use rand::{thread_rng, Rng};
 
 fn get_initiative_values(lentity: &Entity, rentity: &Entity) -> (f32, f32) {
     let lattack = lentity.get_effective_attack() as f32;

@@ -26,21 +26,6 @@ impl Map {
         self.get_room_mut(&id).expect("Start room does not exist.")
     }
 
-    pub fn get_adjacent_rooms(&self, room_number: u16) -> Option<Vec<&Room>> {
-        match self.rooms.get(&room_number) {
-            Some(base_room) => {
-                let mut result = vec![];
-
-                for room_id in base_room.adjacent_rooms.iter() {
-                    result.push(self.get_room(&room_id).unwrap());
-                }
-
-                Some(result)
-            }
-            None => None,
-        }
-    }
-
     pub fn get_room_mut(&mut self, room_number: &u16) -> Option<&mut Room> {
         self.rooms.get_mut(room_number)
     }
@@ -97,19 +82,19 @@ impl Map {
     }
 
     pub fn clear_player(&mut self, id: &Uuid) {
-        for (room_id, room) in self.rooms.iter_mut() {
+        for (_, room) in self.rooms.iter_mut() {
             room.remove_player(&id);
         }
     }
 
     pub fn update_monsters(&mut self) {
-        for (room_id, room) in self.rooms.iter_mut() {
+        for (_, room) in self.rooms.iter_mut() {
             room.update_monsters();
         }
     }
 
     pub fn clear_update_flags(&mut self) {
-        for (room_id, room) in self.rooms.iter_mut() {
+        for (_, room) in self.rooms.iter_mut() {
             room.clear_update_flag();
         }
     }

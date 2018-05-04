@@ -48,10 +48,6 @@ pub mod monster_spawners {
         Box::new(MoleHighPriestSpawner {})
     }
 
-    pub fn mole_goliath_spawner() -> Box<MonsterSpawn + Send> {
-        Box::new(MoleGoliathSpawner {})
-    }
-
     pub fn great_mole_goliath_spawner() -> Box<MonsterSpawn + Send> {
         Box::new(GreatMoleGoliathSpawner {})
     }
@@ -66,10 +62,6 @@ pub mod monster_spawners {
 
     pub fn composite_spawner(spawners: Vec<Box<MonsterSpawn + Send>>) -> Box<MonsterSpawn + Send> {
         Box::new(CompositeSpawner::new(spawners))
-    }
-
-    pub fn null_spawner() -> Box<MonsterSpawn + Send> {
-        Box::new(NullSpawner {})
     }
 
     pub struct SpiderSpawner {
@@ -285,7 +277,7 @@ pub mod monster_spawners {
     pub struct MolePeopleSpawner {
         level: MolePeopleLevel,
         pop_range: (u8, u8),
-        counter : u32,
+        counter: u32,
     }
 
     #[derive(Clone)]
@@ -296,7 +288,6 @@ pub mod monster_spawners {
     }
 
     impl MolePeopleSpawner {
-
         fn number(&mut self) -> u32 {
             self.counter += 1;
             self.counter
@@ -507,7 +498,6 @@ pub mod monster_spawners {
 
     impl MonsterSpawn for MolePeopleSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
-
             let level = self.level.clone();
 
             let mut result = vec![];
@@ -527,23 +517,13 @@ pub mod monster_spawners {
 
     impl MonsterSpawn for MoleHighPriestSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
-            vec![MolePeopleSpawner{
-                level: MolePeopleLevel::Hard,
-                pop_range: (0, 0),
-                counter: 0,
-            }.spawn_mole_high_priest()]
-        }
-    }
-
-    pub struct MoleGoliathSpawner;
-
-    impl MonsterSpawn for MoleGoliathSpawner {
-        fn spawn_monsters(&mut self) -> Vec<Entity> {
-            vec![MolePeopleSpawner{
-                level: MolePeopleLevel::Hard,
-                pop_range: (0, 0),
-                counter: 0,
-            }.spawn_mole_goliath()]
+            vec![
+                MolePeopleSpawner {
+                    level: MolePeopleLevel::Hard,
+                    pop_range: (0, 0),
+                    counter: 0,
+                }.spawn_mole_high_priest(),
+            ]
         }
     }
 
@@ -551,7 +531,7 @@ pub mod monster_spawners {
 
     impl MonsterSpawn for GreatMoleGoliathSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
-            let mut base = MolePeopleSpawner{
+            let mut base = MolePeopleSpawner {
                 level: MolePeopleLevel::Hard,
                 pop_range: (0, 0),
                 counter: 0,
@@ -569,11 +549,13 @@ pub mod monster_spawners {
 
     impl MonsterSpawn for MoleQueenSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
-            vec![MolePeopleSpawner{
-                level: MolePeopleLevel::Hard,
-                pop_range: (0, 0),
-                counter: 0,
-            }.spawn_mole_queen()]
+            vec![
+                MolePeopleSpawner {
+                    level: MolePeopleLevel::Hard,
+                    pop_range: (0, 0),
+                    counter: 0,
+                }.spawn_mole_queen(),
+            ]
         }
     }
 
@@ -582,9 +564,8 @@ pub mod monster_spawners {
     impl MonsterSpawn for PitOfQueensSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
             let mut result = vec![];
-            let mut counter = 0;
             for i in 0..7 {
-                let mut base = MolePeopleSpawner{
+                let mut base = MolePeopleSpawner {
                     level: MolePeopleLevel::Hard,
                     pop_range: (0, 0),
                     counter: 0,
@@ -643,14 +624,6 @@ pub mod monster_spawners {
             }
 
             result
-        }
-    }
-
-    pub struct NullSpawner;
-
-    impl MonsterSpawn for NullSpawner {
-        fn spawn_monsters(&mut self) -> Vec<Entity> {
-            vec![]
         }
     }
 }

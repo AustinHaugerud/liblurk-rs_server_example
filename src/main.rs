@@ -347,6 +347,11 @@ impl ServerCallbacks for ExampleServer {
                 return Ok(());
             }
 
+            if !player.entity_info.alive {
+                context.enqueue_message_this(Error::other("The dead cannot move.".to_string()).unwrap());
+                return Ok(());
+            }
+
             if !self.map.has_player(&player.id) {
                 context.enqueue_message_this(
                     Error::other("Internal server error: Player not in map.".to_string()).unwrap(),
@@ -427,7 +432,7 @@ impl ServerCallbacks for ExampleServer {
         return Ok(());
     }
 
-    fn on_fight(&mut self, context: &mut ServerEventContext, fight: &Fight) -> LurkServerError {
+    fn on_fight(&mut self, context: &mut ServerEventContext, _: &Fight) -> LurkServerError {
         println!("Fight packet received.");
 
         let mut fight_result_message: Option<String> = None;
@@ -437,6 +442,11 @@ impl ServerCallbacks for ExampleServer {
                 context.enqueue_message_this(
                     Error::not_ready("You have not started.".to_string()).unwrap(),
                 );
+            }
+
+            if !player.entity_info.alive {
+                context.enqueue_message_this(Error::other("The dead cannot fight.".to_string()).unwrap());
+                return Ok(());
             }
 
             if let Some(room) = self.map.get_player_room_mut(&context.get_client_id()) {
@@ -485,11 +495,7 @@ impl ServerCallbacks for ExampleServer {
         return Ok(());
     }
 
-    fn on_pvp_fight(
-        &mut self,
-        context: &mut ServerEventContext,
-        pvp_fight: &PvpFight,
-    ) -> LurkServerError {
+    fn on_pvp_fight(&mut self, context: &mut ServerEventContext, _: &PvpFight) -> LurkServerError {
         println!("Pvp fight packet.");
         context.enqueue_message_this(
             Error::no_pvp("Pvp is not currently on this server.".to_string()).unwrap(),
@@ -501,6 +507,12 @@ impl ServerCallbacks for ExampleServer {
         println!("Loot packet received.");
 
         if let Some(player) = self.players.get_mut(&context.get_client_id()) {
+
+            if !player.entity_info.alive {
+                context.enqueue_message_this(Error::other("You cannot loot when you are dead.".to_string()).unwrap());
+                return Ok(());
+            }
+
             if let Some(room) = self.map.get_player_room_mut(&context.get_client_id()) {
                 if let Some(mut monster) = room.loot_monster(&loot.target) {
                     player.entity_info.gold += monster.gold;
@@ -684,12 +696,12 @@ impl ServerCallbacks for ExampleServer {
             println!("Update: {:?}", current);
             self.last_update_time = current;
 
-            for (player_id, player) in self.players.iter_mut() {
+            for (_, player) in self.players.iter_mut() {
                 player.entity_info.regen();
             }
             self.map.update_monsters();
 
-            for (target_id, player) in self.players.iter() {
+            for (target_id, _) in self.players.iter() {
                 if let Some(player_room) = self.map.get_player_room(&target_id) {
                     for player_id in player_room.get_player_ids() {
                         if let Some(player) = self.players.get(&player_id) {
@@ -709,7 +721,7 @@ impl ServerCallbacks for ExampleServer {
             }
             self.map.clear_update_flags();
 
-            for (player_id, player) in self.players.iter_mut() {
+            for (_, player) in self.players.iter_mut() {
                 player.entity_info.update_dirty = false;
             }
         }

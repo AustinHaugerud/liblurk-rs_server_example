@@ -16,7 +16,7 @@ pub struct Entity {
 impl Entity {
     // The more gold a player has, the more their stats are scaled
     pub fn get_gold_skill_multiplier(&self) -> f32 {
-        let boost = (self.gold as f32 * 0.001f32);
+        let boost = self.gold as f32 * 0.001f32;
         match self.monster {
             true => 1f32,
             false => 1f32 + boost,
