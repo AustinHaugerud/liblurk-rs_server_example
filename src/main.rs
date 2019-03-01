@@ -637,7 +637,6 @@ impl ServerCallbacks for ExampleServer {
             );
         }
 
-        let players = self.players.lock().unwrap();
         if let Some(player) = players.get(&context.get_client_id()) {
             if player.started {
                 if let Some(player_room) = self.map.lock().unwrap().get_player_room(&context.get_client_id()) {
