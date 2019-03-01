@@ -6,6 +6,18 @@ use entity::Entity;
 use liblurk::protocol::protocol_message::Character;
 use rand::*;
 
+pub enum LootMonsterResult {
+    InvalidTarget,
+    MonsterAlive,
+    Success(Character),
+}
+
+pub enum MovePlayerResult {
+    InvalidRoom,
+    InvalidPlayer,
+    Success,
+}
+
 pub struct Map {
     rooms: HashMap<u16, Room>,
     start_room_id: u16,
@@ -30,24 +42,24 @@ impl Map {
         self.rooms.get_mut(room_number)
     }
 
-    pub fn move_player(&mut self, player_id: &Uuid, new_location: u16) -> Result<(), String> {
-        if self.has_player(&player_id) && self.has_room(&new_location) {
-            {
-                let player_room = self.get_player_room_mut(&player_id).unwrap();
-                player_room.remove_player(&player_id);
-            }
-            self.get_room_mut(&new_location)
-                .unwrap()
-                .place_player(&player_id);
-            return Ok(());
+    pub fn move_player(&mut self, player_id: &Uuid, new_location: u16) -> MovePlayerResult {
+        if !self.has_player(&player_id) {
+            return MovePlayerResult::InvalidPlayer;
         }
-        if !self.has_player(player_id) {
-            return Err("Player is not in map".to_string());
-        }
+
         if !self.has_room(&new_location) {
-            return Err("Target room does not exist.".to_string());
+            return MovePlayerResult::InvalidRoom;
         }
-        Err("Move player error default.".to_string())
+
+        {
+            let player_room = self.get_player_room_mut(&player_id).unwrap();
+            player_room.remove_player(&player_id);
+        }
+
+        self.get_room_mut(&new_location)
+            .unwrap()
+            .place_player(&player_id);
+        MovePlayerResult::Success
     }
 
     pub fn get_player_room_mut(&mut self, player_id: &Uuid) -> Option<&mut Room> {
@@ -199,28 +211,37 @@ impl Room {
         self.monsters.get_mut(monster_idx)
     }
 
-    pub fn loot_monster(&mut self, target: &String) -> Option<Character> {
+    pub fn loot_monster(&mut self, target: &String) -> LootMonsterResult {
         if let Some(monster_index) = self.get_monster_index(&target) {
-            let monster = self.monsters.remove(monster_index);
-            return Some(
-                Character::new(
-                    monster.name.clone(),
-                    monster.health > 0,
-                    true,
-                    true,
-                    true,
-                    true,
-                    monster.attack,
-                    monster.defense,
-                    monster.regen,
-                    monster.health,
-                    monster.gold,
-                    monster.location,
-                    monster.desc.clone(),
-                ).unwrap(),
-            );
+            let is_alive = self.monsters[monster_index].alive;
+
+            if is_alive {
+                LootMonsterResult::MonsterAlive
+            }
+            else {
+                let monster = self.monsters.remove(monster_index);
+                LootMonsterResult::Success(
+                    Character::new(
+                        monster.name.clone(),
+                        monster.health > 0,
+                        true,
+                        true,
+                        true,
+                        true,
+                        monster.attack,
+                        monster.defense,
+                        monster.regen,
+                        monster.health,
+                        monster.gold,
+                        std::u16::MAX,
+                        monster.desc.clone()
+                    ).expect("Failed to create monster packet.")
+                )
+            }
         }
-        None
+        else {
+            LootMonsterResult::InvalidTarget
+        }
     }
 
     fn get_monster_index(&self, target: &String) -> Option<usize> {

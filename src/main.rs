@@ -21,6 +21,8 @@ use map::{Map, MapBuilder};
 use entity::*;
 use monster_spawn::monster_spawners;
 use monster_spawn::monster_spawners::MolePeopleLevel;
+use map::LootMonsterResult;
+use map::MovePlayerResult;
 
 const INITIAL_POINTS: u16 = 600;
 const STAT_LIMIT: u16 = u16::max_value();
@@ -380,9 +382,25 @@ impl ServerCallbacks for ExampleServer {
                 return Ok(());
             }
 
+            let old_room_id = player.entity_info.location;
+
             match self.map.move_player(&player.id, change_room.room_number) {
-                Ok(_) => {
+                MovePlayerResult::InvalidRoom => {
+                    context.enqueue_message_this(Error::no_target("Invalid room.".to_string()).unwrap());
+                },
+                MovePlayerResult::InvalidPlayer => {
+                    println!("Move player bug: Player not recognized.");
+                    return Err(());
+                },
+                MovePlayerResult::Success => {
+
+                    let old_room = self.map.get_room(&old_room_id).expect("Old room not found.");
+
                     player.entity_info.location = change_room.room_number;
+
+                    for player_id in old_room.get_player_ids() {
+                        context.enqueue_message(player.get_character_packet(), player_id);
+                    }
 
                     let player_room = self.map
                         .get_player_room(&player.id)
@@ -417,10 +435,6 @@ impl ServerCallbacks for ExampleServer {
                         context.enqueue_message_this(monster_packet);
                     }
                 }
-                Err(e) => {
-                    println!("Move Player Bug: {}", e);
-                    return Err(());
-                }
             }
         } else {
             context.enqueue_message_this(
@@ -442,6 +456,7 @@ impl ServerCallbacks for ExampleServer {
                 context.enqueue_message_this(
                     Error::not_ready("You have not started.".to_string()).unwrap(),
                 );
+                return Ok(());
             }
 
             if !player.entity_info.alive {
@@ -513,19 +528,28 @@ impl ServerCallbacks for ExampleServer {
                 return Ok(());
             }
 
-            if let Some(room) = self.map.get_player_room_mut(&context.get_client_id()) {
-                if let Some(mut monster) = room.loot_monster(&loot.target) {
-                    player.entity_info.gold += monster.gold;
-                    monster.gold = 0;
-                    player.entity_info.update_dirty = true;
+            if !player.started {
+                context.enqueue_message_this(Error::not_ready("You have not started.".to_string()).unwrap());
+                return Ok(());
+            }
 
-                    for player_id in room.get_player_ids() {
-                        context.enqueue_message(monster.clone(), player_id.clone());
+            if let Some(room) = self.map.get_player_room_mut(&context.get_client_id()) {
+                match room.loot_monster(&loot.target) {
+                    LootMonsterResult::InvalidTarget => {
+                        context.enqueue_message_this(Error::no_target("Invalid target.".to_string()).unwrap());
+                    },
+                    LootMonsterResult::MonsterAlive => {
+                        context.enqueue_message_this(Error::no_target("Can't loot living target.".to_string()).unwrap());
+                    },
+                    LootMonsterResult::Success(mut monster) => {
+                        player.entity_info.gold += monster.gold;
+                        monster.gold = 0;
+                        player.entity_info.update_dirty = true;
+
+                        for player_id in room.get_player_ids() {
+                            context.enqueue_message(monster.clone(), player_id.clone());
+                        }
                     }
-                } else {
-                    context.enqueue_message_this(
-                        Error::no_target("Invalid target".to_string()).unwrap(),
-                    );
                 }
             }
         }
