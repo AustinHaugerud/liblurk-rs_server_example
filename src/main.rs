@@ -28,6 +28,8 @@ use map::MovePlayerResult;
 
 use std::sync::Arc;
 use std::sync::Mutex;
+use rest::RestService;
+use std::thread;
 
 const INITIAL_POINTS: u16 = 600;
 const STAT_LIMIT: u16 = u16::max_value();
@@ -276,6 +278,14 @@ impl ExampleServer {
             }
         }
         None
+    }
+
+    pub fn map(&self) -> Arc<Mutex<Map>> {
+        self.map.clone()
+    }
+
+    pub fn players(&self) -> Arc<Mutex<HashMap<Uuid, Player>>> {
+        self.players.clone()
     }
 }
 
@@ -760,9 +770,8 @@ impl ServerCallbacks for ExampleServer {
                     }
                 }
             }
-            self.map.lock().unwrap().clear_update_flags();
 
-            let mut players = self.players.lock().unwrap();
+            self.map.lock().unwrap().clear_update_flags();
 
             for (_, player) in players.iter_mut() {
                 player.entity_info.update_dirty = false;
@@ -778,10 +787,17 @@ fn main() {
         .parse::<u16>()
         .expect("Failed to parse port number.");
 
+    let behaviour = ExampleServer::new();
+
+    let rest_server = RestService::new(behaviour.map(), behaviour.players()).expect("Failed to create REST service.");
+
     let mut server = Server::create(
-        (IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port_number),
-        Box::new(ExampleServer::new()),
+        (IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port_number),
+        Box::new(behaviour),
     ).expect("Unable to create server.");
+    thread::spawn(move || {
+        rest_server.start(port_number + 1);
+    });
     match server.start() {
         Ok(_) => println!("Success"),
         Err(_) => println!("Failed to start server"),

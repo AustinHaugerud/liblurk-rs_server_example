@@ -1,5 +1,4 @@
 use entity::Entity;
-use std::sync::Arc;
 
 pub trait MonsterSpawn {
     fn spawn_monsters(&mut self) -> Vec<Entity>;
