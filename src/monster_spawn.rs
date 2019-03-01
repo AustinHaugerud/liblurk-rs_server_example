@@ -1,42 +1,47 @@
 use entity::Entity;
+use std::sync::Arc;
 
 pub trait MonsterSpawn {
     fn spawn_monsters(&mut self) -> Vec<Entity>;
 }
 
+pub type MonsterSpawner = Box<MonsterSpawn + Send>;
+
 pub mod monster_spawners {
+    use std::sync::Arc;
+    use super::MonsterSpawner;
     use super::MonsterSpawn;
     use entity::Entity;
     use rand::{thread_rng, Rng};
 
-    pub fn spider_spawner() -> Box<MonsterSpawn + Send> {
+    pub fn spider_spawner() -> MonsterSpawner {
         Box::new(SpiderSpawner { counter: 0 })
     }
 
-    pub fn derry_spawner() -> Box<MonsterSpawn + Send> {
+    pub fn derry_spawner() -> MonsterSpawner {
         Box::new(DerrySpawner {})
     }
 
-    pub fn creepy_uncle_spawner() -> Box<MonsterSpawn + Send> {
+    pub fn creepy_uncle_spawner() -> MonsterSpawner {
         Box::new(CreepyUncleSpawner {})
     }
 
-    pub fn mean_butler_spawner() -> Box<MonsterSpawn + Send> {
+    pub fn mean_butler_spawner() -> MonsterSpawner {
         Box::new(MeanButlerSpawner {})
     }
 
-    pub fn honey_badger_spawner() -> Box<MonsterSpawn + Send> {
+    pub fn honey_badger_spawner() -> MonsterSpawner {
         Box::new(HoneyBadgerSpawner {})
     }
 
-    pub fn pit_of_queens_spawner() -> Box<MonsterSpawn + Send> {
+    pub fn pit_of_queens_spawner() -> MonsterSpawner {
         Box::new(PitOfQueensSpawner {})
     }
 
     pub fn mole_people_spawner(
         level: MolePeopleLevel,
         (min_pop, max_pop): (u8, u8),
-    ) -> Box<MonsterSpawn + Send> {
+    ) -> MonsterSpawner {
         Box::new(MolePeopleSpawner {
             level,
             pop_range: (min_pop, max_pop),
@@ -44,23 +49,23 @@ pub mod monster_spawners {
         })
     }
 
-    pub fn mole_high_priest_spawner() -> Box<MonsterSpawn + Send> {
+    pub fn mole_high_priest_spawner() -> MonsterSpawner {
         Box::new(MoleHighPriestSpawner {})
     }
 
-    pub fn great_mole_goliath_spawner() -> Box<MonsterSpawn + Send> {
+    pub fn great_mole_goliath_spawner() -> MonsterSpawner {
         Box::new(GreatMoleGoliathSpawner {})
     }
 
-    pub fn mole_queen_spawner() -> Box<MonsterSpawn + Send> {
+    pub fn mole_queen_spawner() -> MonsterSpawner {
         Box::new(MoleQueenSpawner {})
     }
 
-    pub fn homonculus_spawner() -> Box<MonsterSpawn + Send> {
+    pub fn homonculus_spawner() -> MonsterSpawner {
         Box::new(DerryHomonculusSpawner {})
     }
 
-    pub fn composite_spawner(spawners: Vec<Box<MonsterSpawn + Send>>) -> Box<MonsterSpawn + Send> {
+    pub fn composite_spawner(spawners: Vec<MonsterSpawner>) -> MonsterSpawner {
         Box::new(CompositeSpawner::new(spawners))
     }
 
@@ -604,11 +609,11 @@ pub mod monster_spawners {
     }
 
     struct CompositeSpawner {
-        impl_spawners: Vec<Box<MonsterSpawn + Send>>,
+        impl_spawners: Vec<MonsterSpawner>,
     }
 
     impl CompositeSpawner {
-        pub fn new(spawners: Vec<Box<MonsterSpawn + Send>>) -> CompositeSpawner {
+        pub fn new(spawners: Vec<MonsterSpawner>) -> CompositeSpawner {
             CompositeSpawner {
                 impl_spawners: spawners,
             }

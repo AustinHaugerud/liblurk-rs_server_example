@@ -1,11 +1,13 @@
 extern crate liblurk;
 extern crate rand;
 extern crate uuid;
+#[macro_use] extern crate nickel;
 
 mod map;
 mod entity;
 mod monster_spawn;
 mod combat;
+mod rest;
 
 use std::collections::HashMap;
 use std::net::{IpAddr, Ipv4Addr};
@@ -24,6 +26,9 @@ use monster_spawn::monster_spawners::MolePeopleLevel;
 use map::LootMonsterResult;
 use map::MovePlayerResult;
 
+use std::sync::Arc;
+use std::sync::Mutex;
+
 const INITIAL_POINTS: u16 = 600;
 const STAT_LIMIT: u16 = u16::max_value();
 
@@ -38,7 +43,7 @@ pub fn get_game_packet() -> Game {
     }
 }
 
-struct Player {
+pub struct Player {
     entity_info: Entity,
     ready: bool,
     started: bool,
@@ -74,8 +79,8 @@ impl Player {
 }
 
 struct ExampleServer {
-    players: HashMap<Uuid, Player>,
-    map: Map,
+    players: Arc<Mutex<HashMap<Uuid, Player>>>,
+    map: Arc<Mutex<Map>>,
     last_update_time: Instant,
 }
 
@@ -258,14 +263,14 @@ impl ExampleServer {
         let map = map_builder.complete().expect("Failed to build map");
 
         ExampleServer {
-            players: HashMap::new(),
-            map,
+            players: Arc::new(Mutex::new(HashMap::new())),
+            map : Arc::new(Mutex::new(map)),
             last_update_time: Instant::now(),
         }
     }
 
     fn get_player_id_by_name(&self, search_name: &String) -> Option<Uuid> {
-        for (id, player) in self.players.iter() {
+        for (id, player) in self.players.lock().unwrap().iter() {
             if search_name.eq(&player.entity_info.name) {
                 return Some(id.clone());
             }
@@ -279,7 +284,7 @@ impl ServerCallbacks for ExampleServer {
         println!("Connection made!");
 
         context.enqueue_message_this(get_game_packet());
-        self.players.insert(
+        self.players.lock().unwrap().insert(
             context.get_client_id(),
             Player {
                 entity_info: Entity {
@@ -306,8 +311,8 @@ impl ServerCallbacks for ExampleServer {
 
     fn on_disconnect(&mut self, client_id: &Uuid) {
         println!("Disconnect made.");
-        self.players.remove(client_id);
-        self.map.clear_player(&client_id);
+        self.players.lock().unwrap().remove(client_id);
+        self.map.lock().unwrap().clear_player(&client_id);
     }
 
     fn on_message(
@@ -336,7 +341,8 @@ impl ServerCallbacks for ExampleServer {
         change_room: &ChangeRoom,
     ) -> LurkServerError {
         println!("Change room packet received.");
-        if let Some(player) = self.players.get_mut(&context.get_client_id()) {
+        let mut players = self.players.lock().unwrap();
+        if let Some(player) = players.get_mut(&context.get_client_id()) {
             if !player.started {
                 context.enqueue_message_this(
                     Error::not_ready("You have not started yet.".to_string()).unwrap(),
@@ -354,7 +360,7 @@ impl ServerCallbacks for ExampleServer {
                 return Ok(());
             }
 
-            if !self.map.has_player(&player.id) {
+            if !self.map.lock().unwrap().has_player(&player.id) {
                 context.enqueue_message_this(
                     Error::other("Internal server error: Player not in map.".to_string()).unwrap(),
                 );
@@ -362,7 +368,7 @@ impl ServerCallbacks for ExampleServer {
                 return Ok(());
             }
 
-            if !self.map.has_room(&change_room.room_number) {
+            if !self.map.lock().unwrap().has_room(&change_room.room_number) {
                 context.enqueue_message_this(
                     Error::bad_room("Room does not exist.".to_string()).unwrap(),
                 );
@@ -370,7 +376,7 @@ impl ServerCallbacks for ExampleServer {
                 return Ok(());
             }
 
-            if !self.map
+            if !self.map.lock().unwrap()
                 .get_player_room(&player.id)
                 .unwrap()
                 .is_adjacent_to(change_room.room_number)
@@ -384,7 +390,7 @@ impl ServerCallbacks for ExampleServer {
 
             let old_room_id = player.entity_info.location;
 
-            match self.map.move_player(&player.id, change_room.room_number) {
+            match self.map.lock().unwrap().move_player(&player.id, change_room.room_number) {
                 MovePlayerResult::InvalidRoom => {
                     context.enqueue_message_this(Error::no_target("Invalid room.".to_string()).unwrap());
                 },
@@ -394,7 +400,8 @@ impl ServerCallbacks for ExampleServer {
                 },
                 MovePlayerResult::Success => {
 
-                    let old_room = self.map.get_room(&old_room_id).expect("Old room not found.");
+                    let map = self.map.lock().unwrap();
+                    let old_room = map.get_room(&old_room_id).expect("Old room not found.");
 
                     player.entity_info.location = change_room.room_number;
 
@@ -402,7 +409,7 @@ impl ServerCallbacks for ExampleServer {
                         context.enqueue_message(player.get_character_packet(), player_id);
                     }
 
-                    let player_room = self.map
+                    let player_room = map
                         .get_player_room(&player.id)
                         .expect("Bug: Player wasn't moved correctly.");
 
@@ -415,7 +422,7 @@ impl ServerCallbacks for ExampleServer {
                     );
 
                     for adj_room_num in player_room.get_adjacent_rooms() {
-                        let adj_room = self.map
+                        let adj_room = map
                             .get_room(&adj_room_num)
                             .expect("Bug: Adjacent room doesn't exist.");
 
@@ -451,7 +458,8 @@ impl ServerCallbacks for ExampleServer {
 
         let mut fight_result_message: Option<String> = None;
 
-        if let Some(player) = self.players.get_mut(&context.get_client_id()) {
+        let mut players = self.players.lock().unwrap();
+        if let Some(player) = players.get_mut(&context.get_client_id()) {
             if !player.started {
                 context.enqueue_message_this(
                     Error::not_ready("You have not started.".to_string()).unwrap(),
@@ -464,7 +472,7 @@ impl ServerCallbacks for ExampleServer {
                 return Ok(());
             }
 
-            if let Some(room) = self.map.get_player_room_mut(&context.get_client_id()) {
+            if let Some(room) = self.map.lock().unwrap().get_player_room_mut(&context.get_client_id()) {
                 if let Some(monster) = room.get_random_monster_mut() {
                     fight_result_message =
                         Some(combat::handle_fight(&mut player.entity_info, monster));
@@ -485,10 +493,10 @@ impl ServerCallbacks for ExampleServer {
         }
 
         if let Some(message) = fight_result_message {
-            if let Some(room) = self.map.get_player_room(&context.get_client_id()) {
+            if let Some(room) = self.map.lock().unwrap().get_player_room(&context.get_client_id()) {
                 for send_target in room.get_player_ids() {
                     for player_id in room.get_player_ids() {
-                        if let Some(player) = self.players.get(&player_id) {
+                        if let Some(player) = players.get(&player_id) {
                             context.enqueue_message(
                                 player.get_character_packet(),
                                 send_target.clone(),
@@ -521,7 +529,8 @@ impl ServerCallbacks for ExampleServer {
     fn on_loot(&mut self, context: &mut ServerEventContext, loot: &Loot) -> LurkServerError {
         println!("Loot packet received.");
 
-        if let Some(player) = self.players.get_mut(&context.get_client_id()) {
+        let mut players = self.players.lock().unwrap();
+        if let Some(player) = players.get_mut(&context.get_client_id()) {
 
             if !player.entity_info.alive {
                 context.enqueue_message_this(Error::other("You cannot loot when you are dead.".to_string()).unwrap());
@@ -533,7 +542,7 @@ impl ServerCallbacks for ExampleServer {
                 return Ok(());
             }
 
-            if let Some(room) = self.map.get_player_room_mut(&context.get_client_id()) {
+            if let Some(room) = self.map.lock().unwrap().get_player_room_mut(&context.get_client_id()) {
                 match room.loot_monster(&loot.target) {
                     LootMonsterResult::InvalidTarget => {
                         context.enqueue_message_this(Error::no_target("Invalid target.".to_string()).unwrap());
@@ -560,7 +569,8 @@ impl ServerCallbacks for ExampleServer {
 
     fn on_start(&mut self, context: &mut ServerEventContext, _: &Start) -> LurkServerError {
         println!("Start packet received.");
-        if let Some(player) = self.players.get_mut(&context.get_client_id()) {
+        let mut players = self.players.lock().unwrap();
+        if let Some(player) = players.get_mut(&context.get_client_id()) {
             if player.started {
                 context.enqueue_message_this(
                     Error::other("You've already started.".to_string()).unwrap(),
@@ -571,13 +581,14 @@ impl ServerCallbacks for ExampleServer {
 
             if player.ready {
                 player.started = true;
-                player.entity_info.location = self.map.get_start_room().get_number();
-                self.map.get_start_room_mut().place_player(&player.id);
+                player.entity_info.location = self.map.lock().unwrap().get_start_room().get_number();
+                self.map.lock().unwrap().get_start_room_mut().place_player(&player.id);
 
                 context.enqueue_message_this(player.get_character_packet());
                 println!("Enqueued character packet.");
 
-                let player_room = self.map
+                let map = self.map.lock().unwrap();
+                let player_room = map
                     .get_player_room(&player.id)
                     .expect("Bug: Failed to get player room.");
 
@@ -590,7 +601,7 @@ impl ServerCallbacks for ExampleServer {
                 );
 
                 for adj_room_id in player_room.get_adjacent_rooms().iter() {
-                    let adj_room = self.map
+                    let adj_room = map
                         .get_room(&adj_room_id)
                         .expect("Bug: Failed to get adj room.");
 
@@ -616,11 +627,12 @@ impl ServerCallbacks for ExampleServer {
             );
         }
 
-        if let Some(player) = self.players.get(&context.get_client_id()) {
+        let players = self.players.lock().unwrap();
+        if let Some(player) = players.get(&context.get_client_id()) {
             if player.started {
-                if let Some(player_room) = self.map.get_player_room(&context.get_client_id()) {
+                if let Some(player_room) = self.map.lock().unwrap().get_player_room(&context.get_client_id()) {
                     for player_id in player_room.get_player_ids() {
-                        if let Some(player) = self.players.get(&player_id) {
+                        if let Some(player) = players.get(&player_id) {
                             context.enqueue_message_this(player.get_character_packet());
                         }
                         context.enqueue_message(player.get_character_packet(), player_id.clone());
@@ -658,7 +670,8 @@ impl ServerCallbacks for ExampleServer {
             return Ok(());
         }
 
-        if let Some(player) = self.players.get_mut(&context.get_client_id()) {
+        let mut players = self.players.lock().unwrap();
+        if let Some(player) = players.get_mut(&context.get_client_id()) {
             if !player.started {
                 println!("Accept character!");
                 context.enqueue_message_this(Accept::new(CHARACTER_TYPE));
@@ -721,15 +734,18 @@ impl ServerCallbacks for ExampleServer {
             println!("Update: {:?}", current);
             self.last_update_time = current;
 
-            for (_, player) in self.players.iter_mut() {
+            let mut players = self.players.lock().unwrap();
+
+            for (_, player) in players.iter_mut() {
                 player.entity_info.regen();
             }
-            self.map.update_monsters();
 
-            for (target_id, _) in self.players.iter() {
-                if let Some(player_room) = self.map.get_player_room(&target_id) {
+            self.map.lock().unwrap().update_monsters();
+
+            for (target_id, _) in players.iter() {
+                if let Some(player_room) = self.map.lock().unwrap().get_player_room(&target_id) {
                     for player_id in player_room.get_player_ids() {
-                        if let Some(player) = self.players.get(&player_id) {
+                        if let Some(player) = players.get(&player_id) {
                             if player.entity_info.update_dirty {
                                 context.enqueue_message(
                                     player.get_character_packet(),
@@ -744,9 +760,11 @@ impl ServerCallbacks for ExampleServer {
                     }
                 }
             }
-            self.map.clear_update_flags();
+            self.map.lock().unwrap().clear_update_flags();
 
-            for (_, player) in self.players.iter_mut() {
+            let mut players = self.players.lock().unwrap();
+
+            for (_, player) in players.iter_mut() {
                 player.entity_info.update_dirty = false;
             }
         }
