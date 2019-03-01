@@ -28,7 +28,7 @@ impl RestService {
     }
 
     pub fn start(self, port : u16) {
-        self.server.listen((IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port));
+        self.server.listen((IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port)).unwrap();
     }
 }
 
