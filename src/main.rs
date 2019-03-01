@@ -547,6 +547,7 @@ impl ServerCallbacks for ExampleServer {
                         player.entity_info.update_dirty = true;
 
                         for player_id in room.get_player_ids() {
+                            println!("Notifying player {:?} of monster removal.", &player_id);
                             context.enqueue_message(monster.clone(), player_id.clone());
                         }
                     }
