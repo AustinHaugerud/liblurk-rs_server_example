@@ -3,7 +3,6 @@ extern crate rand;
 extern crate uuid;
 #[macro_use]
 extern crate nickel;
-extern crate hyper;
 
 mod combat;
 mod entity;
