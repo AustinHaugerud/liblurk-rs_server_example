@@ -166,6 +166,6 @@ fn get_players_report(
         }
     } else {
         println!("Players report.");
-        get_all_players_report(players, map)
+        get_all_players_report(players)
     }
 }
