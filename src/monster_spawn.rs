@@ -7,9 +7,8 @@ pub trait MonsterSpawn {
 pub type MonsterSpawner = Box<MonsterSpawn + Send>;
 
 pub mod monster_spawners {
-    use std::sync::Arc;
-    use super::MonsterSpawner;
     use super::MonsterSpawn;
+    use super::MonsterSpawner;
     use entity::Entity;
     use rand::{thread_rng, Rng};
 
@@ -185,22 +184,20 @@ pub mod monster_spawners {
 
     impl MonsterSpawn for DerrySpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
-            vec![
-                Entity {
-                    update_dirty: true,
-                    name: String::from("Derry"),
-                    attack: 100,
-                    defense: 100,
-                    regen: 100,
-                    health: 200,
-                    gold: 0,
-                    location: 0,
-                    alive: true,
-                    monster: true,
-                    desc: String::from("He seems to have lost his mind in a caffeine overdose."),
-                    base_health: 200,
-                },
-            ]
+            vec![Entity {
+                update_dirty: true,
+                name: String::from("Derry"),
+                attack: 100,
+                defense: 100,
+                regen: 100,
+                health: 200,
+                gold: 0,
+                location: 0,
+                alive: true,
+                monster: true,
+                desc: String::from("He seems to have lost his mind in a caffeine overdose."),
+                base_health: 200,
+            }]
         }
     }
 
@@ -209,22 +206,20 @@ pub mod monster_spawners {
     impl MonsterSpawn for CreepyUncleSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
             let mut gen = thread_rng();
-            vec![
-                Entity {
-                    update_dirty: true,
-                    name: String::from("Creepy Uncle"),
-                    attack: 75,
-                    defense: 10,
-                    regen: 0,
-                    health: 200,
-                    gold: gen.gen_range(100u16, 200u16),
-                    location: 0,
-                    alive: true,
-                    monster: true,
-                    desc: String::from("\"Come give your uncle a hug buddy\""),
-                    base_health: 200,
-                },
-            ]
+            vec![Entity {
+                update_dirty: true,
+                name: String::from("Creepy Uncle"),
+                attack: 75,
+                defense: 10,
+                regen: 0,
+                health: 200,
+                gold: gen.gen_range(100u16, 200u16),
+                location: 0,
+                alive: true,
+                monster: true,
+                desc: String::from("\"Come give your uncle a hug buddy\""),
+                base_health: 200,
+            }]
         }
     }
 
@@ -233,24 +228,22 @@ pub mod monster_spawners {
     impl MonsterSpawn for MeanButlerSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
             let mut gen = thread_rng();
-            vec![
-                Entity {
-                    update_dirty: true,
-                    name: String::from("Mean Butler"),
-                    attack: 50,
-                    defense: 10,
-                    regen: 5,
-                    health: 100,
-                    gold: gen.gen_range(5u16, 50u16),
-                    location: 0,
-                    alive: true,
-                    monster: true,
-                    desc: String::from(
-                        "The butler seems to very strongly believe you should be somewhere else.",
-                    ),
-                    base_health: 100,
-                },
-            ]
+            vec![Entity {
+                update_dirty: true,
+                name: String::from("Mean Butler"),
+                attack: 50,
+                defense: 10,
+                regen: 5,
+                health: 100,
+                gold: gen.gen_range(5u16, 50u16),
+                location: 0,
+                alive: true,
+                monster: true,
+                desc: String::from(
+                    "The butler seems to very strongly believe you should be somewhere else.",
+                ),
+                base_health: 100,
+            }]
         }
     }
 
@@ -259,22 +252,20 @@ pub mod monster_spawners {
     impl MonsterSpawn for HoneyBadgerSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
             let mut gen = thread_rng();
-            vec![
-                Entity {
-                    update_dirty: true,
-                    name: String::from("Honey Badger"),
-                    attack: 350,
-                    defense: 250,
-                    regen: 300,
-                    health: 1000,
-                    gold: gen.gen_range(500u16, 1250u16),
-                    location: 0,
-                    alive: true,
-                    monster: true,
-                    desc: String::from("This is the honey badger."),
-                    base_health: 1000,
-                },
-            ]
+            vec![Entity {
+                update_dirty: true,
+                name: String::from("Honey Badger"),
+                attack: 350,
+                defense: 250,
+                regen: 300,
+                health: 1000,
+                gold: gen.gen_range(500u16, 1250u16),
+                location: 0,
+                alive: true,
+                monster: true,
+                desc: String::from("This is the honey badger."),
+                base_health: 1000,
+            }]
         }
     }
 
@@ -521,13 +512,12 @@ pub mod monster_spawners {
 
     impl MonsterSpawn for MoleHighPriestSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
-            vec![
-                MolePeopleSpawner {
-                    level: MolePeopleLevel::Hard,
-                    pop_range: (0, 0),
-                    counter: 0,
-                }.spawn_mole_high_priest(),
-            ]
+            vec![MolePeopleSpawner {
+                level: MolePeopleLevel::Hard,
+                pop_range: (0, 0),
+                counter: 0,
+            }
+            .spawn_mole_high_priest()]
         }
     }
 
@@ -539,7 +529,8 @@ pub mod monster_spawners {
                 level: MolePeopleLevel::Hard,
                 pop_range: (0, 0),
                 counter: 0,
-            }.spawn_mole_goliath();
+            }
+            .spawn_mole_goliath();
             base.attack = 1000;
             base.defense = 1000;
             base.regen = 300;
@@ -553,13 +544,12 @@ pub mod monster_spawners {
 
     impl MonsterSpawn for MoleQueenSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
-            vec![
-                MolePeopleSpawner {
-                    level: MolePeopleLevel::Hard,
-                    pop_range: (0, 0),
-                    counter: 0,
-                }.spawn_mole_queen(),
-            ]
+            vec![MolePeopleSpawner {
+                level: MolePeopleLevel::Hard,
+                pop_range: (0, 0),
+                counter: 0,
+            }
+            .spawn_mole_queen()]
         }
     }
 
@@ -573,7 +563,8 @@ pub mod monster_spawners {
                     level: MolePeopleLevel::Hard,
                     pop_range: (0, 0),
                     counter: 0,
-                }.spawn_mole_queen();
+                }
+                .spawn_mole_queen();
                 base.name = format!("{} {}", base.name, i + 1).to_owned();
                 result.push(base);
             }
@@ -586,24 +577,22 @@ pub mod monster_spawners {
     impl MonsterSpawn for DerryHomonculusSpawner {
         fn spawn_monsters(&mut self) -> Vec<Entity> {
             let mut gen = thread_rng();
-            vec![
-                Entity {
-                    update_dirty: true,
-                    name: String::from("Derry's Homonculus"),
-                    attack: 1000,
-                    defense: 1000,
-                    regen: 1000,
-                    health: 3000,
-                    gold: gen.gen_range(3000u16, 5000u16),
-                    location: 0,
-                    alive: true,
-                    monster: true,
-                    desc: String::from(
-                        "It's a hideous titanic deformed humanoid, with a resemblance to Derry.",
-                    ),
-                    base_health: 3000,
-                },
-            ]
+            vec![Entity {
+                update_dirty: true,
+                name: String::from("Derry's Homonculus"),
+                attack: 1000,
+                defense: 1000,
+                regen: 1000,
+                health: 3000,
+                gold: gen.gen_range(3000u16, 5000u16),
+                location: 0,
+                alive: true,
+                monster: true,
+                desc: String::from(
+                    "It's a hideous titanic deformed humanoid, with a resemblance to Derry.",
+                ),
+                base_health: 3000,
+            }]
         }
     }
 

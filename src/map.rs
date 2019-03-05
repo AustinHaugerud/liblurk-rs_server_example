@@ -1,10 +1,10 @@
+use entity::Entity;
+use liblurk::protocol::protocol_message::Character;
+use monster_spawn::MonsterSpawn;
+use rand::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use uuid::Uuid;
-use monster_spawn::MonsterSpawn;
-use entity::Entity;
-use liblurk::protocol::protocol_message::Character;
-use rand::*;
 
 pub enum LootMonsterResult {
     InvalidTarget,
@@ -182,7 +182,8 @@ impl Room {
                         monster.gold,
                         monster.location,
                         monster.desc.clone(),
-                    ).expect("Failed on monster to character packet."),
+                    )
+                    .expect("Failed on monster to character packet."),
                 );
             }
         }
@@ -217,8 +218,7 @@ impl Room {
 
             if is_alive {
                 LootMonsterResult::MonsterAlive
-            }
-            else {
+            } else {
                 let monster = self.monsters.remove(monster_index);
                 LootMonsterResult::Success(
                     Character::new(
@@ -234,12 +234,12 @@ impl Room {
                         monster.health,
                         monster.gold,
                         std::u16::MAX,
-                        monster.desc.clone()
-                    ).expect("Failed to create monster packet.")
+                        monster.desc.clone(),
+                    )
+                    .expect("Failed to create monster packet."),
                 )
             }
-        }
-        else {
+        } else {
             LootMonsterResult::InvalidTarget
         }
     }

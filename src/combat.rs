@@ -43,7 +43,8 @@ pub fn handle_fight(lentity: &mut Entity, rentity: &mut Entity) -> String {
             < get_hit_chance(
                 lentity.get_effective_attack(),
                 rentity.get_effective_defense(),
-            ) {
+            )
+        {
             let dmg = get_damage(lentity.attack, rentity.defense);
             fight_result_message
                 .push_str(format!("They hit for {} damage!\n", dmg.floor()).as_str());
@@ -63,7 +64,8 @@ pub fn handle_fight(lentity: &mut Entity, rentity: &mut Entity) -> String {
                 < get_hit_chance(
                     rentity.get_effective_attack(),
                     lentity.get_effective_defense(),
-                ) {
+                )
+            {
                 let dmg = get_damage(rentity.attack, lentity.defense);
                 fight_result_message
                     .push_str(format!("They hit for {} damage!\n", dmg.floor()).as_str());
@@ -84,7 +86,8 @@ pub fn handle_fight(lentity: &mut Entity, rentity: &mut Entity) -> String {
             < get_hit_chance(
                 rentity.get_effective_attack(),
                 lentity.get_effective_defense(),
-            ) {
+            )
+        {
             let dmg = get_damage(rentity.attack, lentity.defense);
             fight_result_message
                 .push_str(format!("They hit for {} damage!\n", dmg.floor()).as_str());
@@ -104,7 +107,8 @@ pub fn handle_fight(lentity: &mut Entity, rentity: &mut Entity) -> String {
                 < get_hit_chance(
                     lentity.get_effective_attack(),
                     rentity.get_effective_defense(),
-                ) {
+                )
+            {
                 let dmg = get_damage(lentity.attack, rentity.defense);
                 fight_result_message
                     .push_str(format!("They hit for {} damage!\n", dmg.floor()).as_str());

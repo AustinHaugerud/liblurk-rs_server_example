@@ -1,12 +1,14 @@
 extern crate liblurk;
 extern crate rand;
 extern crate uuid;
-#[macro_use] extern crate nickel;
+#[macro_use]
+extern crate nickel;
+extern crate hyper;
 
-mod map;
-mod entity;
-mod monster_spawn;
 mod combat;
+mod entity;
+mod map;
+mod monster_spawn;
 mod rest;
 
 use std::collections::HashMap;
@@ -15,20 +17,21 @@ use std::time::{Duration, Instant};
 
 use uuid::Uuid;
 
-use liblurk::server::server::{LurkServerError, Server, ServerCallbacks, ServerEventContext,
-                              UpdateContext};
 use liblurk::protocol::protocol_message::*;
+use liblurk::server::server::{
+    LurkServerError, Server, ServerCallbacks, ServerEventContext, UpdateContext,
+};
 
-use map::{Map, MapBuilder};
 use entity::*;
-use monster_spawn::monster_spawners;
-use monster_spawn::monster_spawners::MolePeopleLevel;
 use map::LootMonsterResult;
 use map::MovePlayerResult;
+use map::{Map, MapBuilder};
+use monster_spawn::monster_spawners;
+use monster_spawn::monster_spawners::MolePeopleLevel;
 
+use rest::RestService;
 use std::sync::Arc;
 use std::sync::Mutex;
-use rest::RestService;
 use std::thread;
 
 const INITIAL_POINTS: u16 = 600;
@@ -76,7 +79,8 @@ impl Player {
             self.entity_info.gold,
             self.entity_info.location,
             limit_str_len(&self.entity_info.desc),
-        ).expect("Invalid character packet from player instance.")
+        )
+        .expect("Invalid character packet from player instance.")
     }
 }
 
@@ -266,7 +270,7 @@ impl ExampleServer {
 
         ExampleServer {
             players: Arc::new(Mutex::new(HashMap::new())),
-            map : Arc::new(Mutex::new(map)),
+            map: Arc::new(Mutex::new(map)),
             last_update_time: Instant::now(),
         }
     }
@@ -366,7 +370,9 @@ impl ServerCallbacks for ExampleServer {
             }
 
             if !player.entity_info.alive {
-                context.enqueue_message_this(Error::other("The dead cannot move.".to_string()).unwrap());
+                context.enqueue_message_this(
+                    Error::other("The dead cannot move.".to_string()).unwrap(),
+                );
                 return Ok(());
             }
 
@@ -386,7 +392,10 @@ impl ServerCallbacks for ExampleServer {
                 return Ok(());
             }
 
-            if !self.map.lock().unwrap()
+            if !self
+                .map
+                .lock()
+                .unwrap()
                 .get_player_room(&player.id)
                 .unwrap()
                 .is_adjacent_to(change_room.room_number)
@@ -400,16 +409,22 @@ impl ServerCallbacks for ExampleServer {
 
             let old_room_id = player.entity_info.location;
 
-            match self.map.lock().unwrap().move_player(&player.id, change_room.room_number) {
+            match self
+                .map
+                .lock()
+                .unwrap()
+                .move_player(&player.id, change_room.room_number)
+            {
                 MovePlayerResult::InvalidRoom => {
-                    context.enqueue_message_this(Error::no_target("Invalid room.".to_string()).unwrap());
-                },
+                    context.enqueue_message_this(
+                        Error::no_target("Invalid room.".to_string()).unwrap(),
+                    );
+                }
                 MovePlayerResult::InvalidPlayer => {
                     println!("Move player bug: Player not recognized.");
                     return Err(());
-                },
+                }
                 MovePlayerResult::Success => {
-
                     let map = self.map.lock().unwrap();
                     let old_room = map.get_room(&old_room_id).expect("Old room not found.");
 
@@ -428,7 +443,8 @@ impl ServerCallbacks for ExampleServer {
                             player_room.get_number(),
                             player_room.get_name(),
                             limit_str_len(&player_room.get_description()),
-                        ).expect("Bug: Invalid room packet created."),
+                        )
+                        .expect("Bug: Invalid room packet created."),
                     );
 
                     for adj_room_num in player_room.get_adjacent_rooms() {
@@ -441,7 +457,8 @@ impl ServerCallbacks for ExampleServer {
                                 adj_room.get_number(),
                                 adj_room.get_name(),
                                 adj_room.get_description(),
-                            ).unwrap(),
+                            )
+                            .unwrap(),
                         );
                     }
                     context.enqueue_message_this(player.get_character_packet());
@@ -457,7 +474,8 @@ impl ServerCallbacks for ExampleServer {
             context.enqueue_message_this(
                 Error::other(
                     "Internal server error: Player not tracked for this session.".to_string(),
-                ).unwrap(),
+                )
+                .unwrap(),
             );
         }
         return Ok(());
@@ -478,11 +496,18 @@ impl ServerCallbacks for ExampleServer {
             }
 
             if !player.entity_info.alive {
-                context.enqueue_message_this(Error::other("The dead cannot fight.".to_string()).unwrap());
+                context.enqueue_message_this(
+                    Error::other("The dead cannot fight.".to_string()).unwrap(),
+                );
                 return Ok(());
             }
 
-            if let Some(room) = self.map.lock().unwrap().get_player_room_mut(&context.get_client_id()) {
+            if let Some(room) = self
+                .map
+                .lock()
+                .unwrap()
+                .get_player_room_mut(&context.get_client_id())
+            {
                 if let Some(monster) = room.get_random_monster_mut() {
                     fight_result_message =
                         Some(combat::handle_fight(&mut player.entity_info, monster));
@@ -495,7 +520,8 @@ impl ServerCallbacks for ExampleServer {
                 context.enqueue_message_this(
                     Error::other(
                         "Internal server error: Started player not placed in room.".to_string(),
-                    ).unwrap(),
+                    )
+                    .unwrap(),
                 );
             }
         } else {
@@ -503,7 +529,12 @@ impl ServerCallbacks for ExampleServer {
         }
 
         if let Some(message) = fight_result_message {
-            if let Some(room) = self.map.lock().unwrap().get_player_room(&context.get_client_id()) {
+            if let Some(room) = self
+                .map
+                .lock()
+                .unwrap()
+                .get_player_room(&context.get_client_id())
+            {
                 for send_target in room.get_player_ids() {
                     for player_id in room.get_player_ids() {
                         if let Some(player) = players.get(&player_id) {
@@ -541,25 +572,37 @@ impl ServerCallbacks for ExampleServer {
 
         let mut players = self.players.lock().unwrap();
         if let Some(player) = players.get_mut(&context.get_client_id()) {
-
             if !player.entity_info.alive {
-                context.enqueue_message_this(Error::other("You cannot loot when you are dead.".to_string()).unwrap());
+                context.enqueue_message_this(
+                    Error::other("You cannot loot when you are dead.".to_string()).unwrap(),
+                );
                 return Ok(());
             }
 
             if !player.started {
-                context.enqueue_message_this(Error::not_ready("You have not started.".to_string()).unwrap());
+                context.enqueue_message_this(
+                    Error::not_ready("You have not started.".to_string()).unwrap(),
+                );
                 return Ok(());
             }
 
-            if let Some(room) = self.map.lock().unwrap().get_player_room_mut(&context.get_client_id()) {
+            if let Some(room) = self
+                .map
+                .lock()
+                .unwrap()
+                .get_player_room_mut(&context.get_client_id())
+            {
                 match room.loot_monster(&loot.target) {
                     LootMonsterResult::InvalidTarget => {
-                        context.enqueue_message_this(Error::no_target("Invalid target.".to_string()).unwrap());
-                    },
+                        context.enqueue_message_this(
+                            Error::no_target("Invalid target.".to_string()).unwrap(),
+                        );
+                    }
                     LootMonsterResult::MonsterAlive => {
-                        context.enqueue_message_this(Error::no_target("Can't loot living target.".to_string()).unwrap());
-                    },
+                        context.enqueue_message_this(
+                            Error::no_target("Can't loot living target.".to_string()).unwrap(),
+                        );
+                    }
                     LootMonsterResult::Success(mut monster) => {
                         player.entity_info.gold += monster.gold;
                         monster.gold = 0;
@@ -591,8 +634,13 @@ impl ServerCallbacks for ExampleServer {
 
             if player.ready {
                 player.started = true;
-                player.entity_info.location = self.map.lock().unwrap().get_start_room().get_number();
-                self.map.lock().unwrap().get_start_room_mut().place_player(&player.id);
+                player.entity_info.location =
+                    self.map.lock().unwrap().get_start_room().get_number();
+                self.map
+                    .lock()
+                    .unwrap()
+                    .get_start_room_mut()
+                    .place_player(&player.id);
 
                 context.enqueue_message_this(player.get_character_packet());
                 println!("Enqueued character packet.");
@@ -607,7 +655,8 @@ impl ServerCallbacks for ExampleServer {
                         player_room.get_number(),
                         player_room.get_name(),
                         player_room.get_description(),
-                    ).unwrap(),
+                    )
+                    .unwrap(),
                 );
 
                 for adj_room_id in player_room.get_adjacent_rooms().iter() {
@@ -620,7 +669,8 @@ impl ServerCallbacks for ExampleServer {
                             adj_room.get_number(),
                             adj_room.get_name(),
                             adj_room.get_description(),
-                        ).unwrap(),
+                        )
+                        .unwrap(),
                     );
                 }
             } else {
@@ -633,13 +683,19 @@ impl ServerCallbacks for ExampleServer {
                 Error::other(
                     "Internal server error: The player for this session is not tracked."
                         .to_string(),
-                ).unwrap(),
+                )
+                .unwrap(),
             );
         }
 
         if let Some(player) = players.get(&context.get_client_id()) {
             if player.started {
-                if let Some(player_room) = self.map.lock().unwrap().get_player_room(&context.get_client_id()) {
+                if let Some(player_room) = self
+                    .map
+                    .lock()
+                    .unwrap()
+                    .get_player_room(&context.get_client_id())
+                {
                     for player_id in player_room.get_player_ids() {
                         if let Some(player) = players.get(&player_id) {
                             context.enqueue_message_this(player.get_character_packet());
@@ -670,7 +726,8 @@ impl ServerCallbacks for ExampleServer {
             return Ok(());
         }
 
-        if character.attack > STAT_LIMIT || character.defense > STAT_LIMIT
+        if character.attack > STAT_LIMIT
+            || character.defense > STAT_LIMIT
             || character.regeneration > STAT_LIMIT
         {
             context.enqueue_message_this(
@@ -725,7 +782,8 @@ impl ServerCallbacks for ExampleServer {
                 Error::other(
                     "Internal server error: the player for this session is not tracked."
                         .to_string(),
-                ).unwrap(),
+                )
+                .unwrap(),
             );
         }
         Ok(())
@@ -781,19 +839,22 @@ impl ServerCallbacks for ExampleServer {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let port_number = args.get(1)
+    let port_number = args
+        .get(1)
         .expect("Insufficient arguments")
         .parse::<u16>()
         .expect("Failed to parse port number.");
 
     let behaviour = ExampleServer::new();
 
-    let rest_server = RestService::new(behaviour.map(), behaviour.players()).expect("Failed to create REST service.");
+    let rest_server = RestService::new(behaviour.map(), behaviour.players())
+        .expect("Failed to create REST service.");
 
     let mut server = Server::create(
         (IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port_number),
         Box::new(behaviour),
-    ).expect("Unable to create server.");
+    )
+    .expect("Unable to create server.");
     thread::spawn(move || {
         rest_server.start(port_number + 1);
     });
