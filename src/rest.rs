@@ -156,7 +156,8 @@ fn get_players_report(
     map: Arc<Mutex<Map>>,
     request: &mut Request,
 ) -> String {
-    if let Some(player_id) = request.param("id") {
+    use nickel::QueryString;
+    if let Some(player_id) = request.query().get("id") {
         println!("Player report");
         if let Ok(uuid) = Uuid::from_str(player_id) {
             get_player_report(&uuid, players, map)
