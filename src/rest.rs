@@ -135,36 +135,13 @@ fn get_player_report(player_id : &Uuid, players : Arc<Mutex<HashMap<Uuid, Player
 }
 
 fn get_all_players_report(
-    players: Arc<Mutex<HashMap<Uuid, Player>>>,
-    map: Arc<Mutex<Map>>,
-) -> String {
+    players: Arc<Mutex<HashMap<Uuid, Player>>>) -> String {
     let guard = players.lock().unwrap();
-    let map_guard = map.lock().unwrap();
 
     let mut report = String::new();
 
     for (_, player) in guard.iter() {
-        let location_name = map_guard
-            .get_room(&player.entity_info.location)
-            .map(|r| r.get_name());
-
-        report.push_str(&format!(
-            "<h4>{}</h4> - {}\n",
-            player.entity_info.name,
-            player.id.to_string()
-        ));
-        report.push_str(&format!("Description: {}\n", player.entity_info.desc));
-        report.push_str(&format!(
-            "Location: {}\n",
-            location_name.unwrap_or("N/A".to_string())
-        ));
-        report.push_str(&format!(
-            "Health: {}\nAttack: {}\nDefense: {}\nRegen: {}\n\n",
-            player.entity_info.health,
-            player.entity_info.attack,
-            player.entity_info.defense,
-            player.entity_info.regen
-        ));
+        report.push_str(&format!("{}: {}", player.entity_info.name, player.id.to_string()));
     }
 
     report
@@ -180,6 +157,7 @@ fn get_players_report(
     request: &mut Request,
 ) -> String {
     if let Some(player_id) = request.param("id") {
+        println!("Player report");
         if let Ok(uuid) = Uuid::from_str(player_id) {
             get_player_report(&uuid, players, map)
         }
@@ -187,6 +165,7 @@ fn get_players_report(
             "Invalid id.\n".to_string()
         }
     } else {
+        println!("Players report.");
         get_all_players_report(players, map)
     }
 }
