@@ -355,6 +355,7 @@ impl ServerCallbacks for ExampleServer {
     ) -> LurkServerError {
         println!("Change room packet received.");
         let mut players = self.players.lock().unwrap();
+        let mut map = self.map.lock().unwrap();
         if let Some(player) = players.get_mut(&context.get_client_id()) {
             if !player.started {
                 context.enqueue_message_this(
@@ -375,7 +376,7 @@ impl ServerCallbacks for ExampleServer {
                 return Ok(());
             }
 
-            if !self.map.lock().unwrap().has_player(&player.id) {
+            if !map.has_player(&player.id) {
                 context.enqueue_message_this(
                     Error::other("Internal server error: Player not in map.".to_string()).unwrap(),
                 );
@@ -383,7 +384,7 @@ impl ServerCallbacks for ExampleServer {
                 return Ok(());
             }
 
-            if !self.map.lock().unwrap().has_room(&change_room.room_number) {
+            if !map.has_room(&change_room.room_number) {
                 context.enqueue_message_this(
                     Error::bad_room("Room does not exist.".to_string()).unwrap(),
                 );
@@ -391,10 +392,7 @@ impl ServerCallbacks for ExampleServer {
                 return Ok(());
             }
 
-            if !self
-                .map
-                .lock()
-                .unwrap()
+            if !map
                 .get_player_room(&player.id)
                 .unwrap()
                 .is_adjacent_to(change_room.room_number)
@@ -408,11 +406,7 @@ impl ServerCallbacks for ExampleServer {
 
             let old_room_id = player.entity_info.location;
 
-            match self
-                .map
-                .lock()
-                .unwrap()
-                .move_player(&player.id, change_room.room_number)
+            match map.move_player(&player.id, change_room.room_number)
             {
                 MovePlayerResult::InvalidRoom => {
                     context.enqueue_message_this(
@@ -424,7 +418,6 @@ impl ServerCallbacks for ExampleServer {
                     return Err(());
                 }
                 MovePlayerResult::Success => {
-                    let map = self.map.lock().unwrap();
                     let old_room = map.get_room(&old_room_id).expect("Old room not found.");
 
                     player.entity_info.location = change_room.room_number;
