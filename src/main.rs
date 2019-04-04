@@ -849,9 +849,9 @@ fn main() {
         Box::new(behaviour),
     )
     .expect("Unable to create server.");
-    thread::spawn(move || {
+    /*thread::spawn(move || {
         rest_server.start(port_number + 1);
-    });
+    });*/
     match server.start() {
         Ok(_) => println!("Success"),
         Err(_) => println!("Failed to start server"),
