@@ -11,7 +11,7 @@ mod monster_spawn;
 mod rest;
 
 use std::collections::HashMap;
-use std::net::{IpAddr, Ipv4Addr};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::time::{Duration, Instant};
 
 use uuid::Uuid;
@@ -831,11 +831,12 @@ impl ServerCallbacks for ExampleServer {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let port_number = args
+    let addr : SocketAddr = args
         .get(1)
         .expect("Insufficient arguments")
-        .parse::<u16>()
-        .expect("Failed to parse port number.");
+        .parse()
+        .expect("Invalid socket address.");
+
 
     let behaviour = ExampleServer::new();
 
@@ -843,7 +844,8 @@ fn main() {
         .expect("Failed to create REST service.");
 
     let mut server = Server::create(
-        (IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port_number),
+        addr,
+        Duration::from_secs(20),
         Box::new(behaviour),
     )
     .expect("Unable to create server.");
