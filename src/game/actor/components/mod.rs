@@ -1,0 +1,9 @@
+pub mod behaviour;
+pub mod combat;
+pub mod health;
+pub mod regeneration;
+pub mod gold;
+pub mod located;
+pub mod name;
+pub mod id;
+pub mod stat_shop;
