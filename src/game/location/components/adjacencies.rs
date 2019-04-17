@@ -1,9 +1,7 @@
 use specs::{Component, Entity, VecStorage};
 
-pub struct Located {
-    pub room: Entity,
-}
+pub struct Adjacencies(pub Vec<Entity>);
 
-impl Component for Located {
+impl Component for Adjacencies {
     type Storage = VecStorage<Self>;
 }

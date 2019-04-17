@@ -1,5 +1,5 @@
-mod actor;
+pub mod actor;
 pub mod components;
-mod location;
-mod systems;
-mod resources;
+pub mod location;
+pub mod resources;
+pub mod systems;

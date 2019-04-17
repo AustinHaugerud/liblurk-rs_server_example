@@ -1,7 +1,9 @@
 use specs::{Component, VecStorage};
 
-pub struct Gold(pub u16);
+pub struct Kind {
+    pub is_monster: bool,
+}
 
-impl Component for Gold {
+impl Component for Kind {
     type Storage = VecStorage<Self>;
 }

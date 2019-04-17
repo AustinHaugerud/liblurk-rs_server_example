@@ -1,9 +1,10 @@
 use specs::{Component, VecStorage};
 use uuid::Uuid;
 
-#[derive(Copy, Clone)]
-pub struct Id(Uuid);
+pub struct Client {
+    pub id: Uuid,
+}
 
-impl Component for Id {
+impl Component for Client {
     type Storage = VecStorage<Self>;
 }

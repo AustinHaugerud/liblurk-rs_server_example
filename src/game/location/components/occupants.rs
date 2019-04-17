@@ -1,8 +1,8 @@
-use specs::{Component, VecStorage};
-use game::actor::components::id::Id;
+use specs::{Component, Entity, VecStorage};
+use std::collections::HashMap;
 
 pub struct Occupants {
-    ids : Vec<Id>
+    pub tenants: HashMap<String, Entity>,
 }
 
 impl Component for Occupants {

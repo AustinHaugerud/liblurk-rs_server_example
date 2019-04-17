@@ -1,2 +1,10 @@
-
+pub mod change_room_events;
 pub mod delta_time;
+pub mod fight_events;
+pub mod loot_events;
+pub mod pvp_fight_events;
+//pub mod identification;
+pub mod character_creation;
+pub mod feedback;
+pub mod logout_events;
+pub mod message_events;

@@ -1,7 +1,7 @@
 use specs::{Component, VecStorage};
 
-pub struct Gold(pub u16);
+pub struct Number(pub u16);
 
-impl Component for Gold {
+impl Component for Number {
     type Storage = VecStorage<Self>;
 }
