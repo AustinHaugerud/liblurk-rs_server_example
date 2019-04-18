@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["AustinHaugerud <austin15328@hotmail.com>"]
 
 [dependencies]
-liblurk = { git = "https://github.com/AustinHaugerud/liblurk-rs.git", branch = "ajjenkins_dev" }
+liblurk = { git = "https://github.com/AustinHaugerud/liblurk-rs.git", branch = "refactor" }
 uuid = "0.6"
 rand = "*"
 nickel = "0.11.0"
