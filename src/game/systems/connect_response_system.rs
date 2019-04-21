@@ -12,7 +12,7 @@ pub struct ConnectResponseSystem;
 impl<'a> System<'a> for ConnectResponseSystem {
     type SystemData = (
         Read<'a, GameConstants>,
-        Write<'a, Option<WriteContext>>,
+        Read<'a, Option<WriteContext>>,
         Write<'a, ConnectEvents>,
     );
 
@@ -23,6 +23,7 @@ impl<'a> System<'a> for ConnectResponseSystem {
         ) = data;
 
         for event in connect_events.0.drain(..) {
+            println!("Processing connect event.");
             let game_packet = Game::new(
                 constants.init_points,
                 constants.stat_limit,

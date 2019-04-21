@@ -16,7 +16,6 @@ impl<'a> System<'a> for RegenerationSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        println!("Hoopla");
         let (constants, max_health_storage, regeneration_storage, mut health_storage) = data;
 
         for (max_health, regeneration, health) in (
