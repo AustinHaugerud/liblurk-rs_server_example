@@ -1,0 +1,16 @@
+(
+    name: "Spider",
+    attack: 10,
+    defense: 10,
+    regeneration: 10,
+    max_health: 5,
+    description: "A hideous large spider.",
+    factions: [("Faction_Spider", 1.0)],
+    behaviour_factors: (
+        hostile: true,
+        greedy: false,
+        roam_activity: 0.2,
+        pursue_aggression: 0.5,
+        courage: 0.4
+    )
+)

@@ -1,0 +1,12 @@
+(
+    regeneration_factor: 0.0001,
+
+    attack_cost: 5,
+    defense_cost: 5,
+    regeneration_cost: 15,
+    health_cost: 10,
+
+    stat_limit: 50000,
+    init_points: 10,
+    game_description: "Welcome! Please create your character. Note you must have at least one of each stat.",
+)

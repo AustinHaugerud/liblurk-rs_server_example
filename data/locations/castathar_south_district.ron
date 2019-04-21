@@ -1,0 +1,16 @@
+(
+    name: "Castathar South District",
+    description: "The south district of the settlement Castathar.",
+    factions: ["Civil"],
+    stones: [
+        Stone(name: "Pillar of the Sword", offering: Attack),
+        Stone(name: "Pillar of the Shield", offering: Defense),
+        Stone(name: "Pillar of Fortitude", offering: MaxHealth),
+        Stone(name: "Pillar of Healing", offering: Regeneration),
+    ],
+    connections: [
+        "Castathar East District",
+        "Castathar North District",
+        "Castathar Sewers South",
+    ]
+)

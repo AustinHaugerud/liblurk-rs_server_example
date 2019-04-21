@@ -7,6 +7,9 @@ authors = ["AustinHaugerud <austin15328@hotmail.com>"]
 liblurk = { git = "https://github.com/AustinHaugerud/liblurk-rs.git", branch = "refactor" }
 uuid = "0.6"
 rand = "*"
-nickel = "0.11.0"
 specs = "*"
+specs-derive = "*"
 clap = "*"
+serde = { version = "1", features = ["serde_derive"] }
+ron = "0.5.1"
+sled = "*"
