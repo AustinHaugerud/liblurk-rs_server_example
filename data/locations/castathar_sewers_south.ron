@@ -1,0 +1,9 @@
+(
+    name: "Castathar Sewers South",
+    description: "The south entrance to the sewers is the only one still safe to use.",
+    factions: ["Civil"],
+    stones: [],
+    connections: [
+        "Castathar South District",
+    ]
+)

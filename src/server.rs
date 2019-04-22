@@ -7,6 +7,8 @@ use game::resources::global_name_registry::GlobalNameRegistry;
 use game::resources::id_name_mapping::IdNameMapping;
 use game::types::GameConstants;
 use game::load::constants_loader::ConstantsLoader;
+use game::resources::start_location::StartLocation;
+use game::resources::character_prep::CharacterPrep;
 
 pub struct Server {
     world: World,
@@ -17,6 +19,7 @@ impl Server {
 
         use game::components;
         use game::resources;
+        use game::load;
 
         let constants_loader = ConstantsLoader::new("data/constants.ron");
         let constants = constants_loader.load_constants()?;
@@ -29,7 +32,12 @@ impl Server {
         world.add_resource::<Option<WriteContext>>(None);
         world.add_resource(GlobalNameRegistry::default());
         world.add_resource(IdNameMapping::default());
-        world.add_resource(constants);
+        world.add_resource(CharacterPrep::default());
+        world.add_resource(constants.clone());
+
+        let locations_loader = load::location_loader::LocationLoader::new("data/locations");
+        let start_loc = load::location_loader::add_locations_to_world(locations_loader, &mut world, &constants.starting_room)?;
+        world.add_resource(StartLocation(Some(start_loc)));
 
         Ok(Server {
             world

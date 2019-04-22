@@ -52,7 +52,7 @@ fn main() -> Result<(), String> {
 
     if let Ok(addr) = matches.value_of("address").unwrap().parse::<SocketAddr>() {
         let server = Server::new()?;
-        execute_server(&addr, Duration::from_millis(100), server);
+        execute_server(&addr, Duration::from_millis(100), server).map_err(|_| "Failed to execute server.")?;
     } else {
         println!("Invalid address.");
     }

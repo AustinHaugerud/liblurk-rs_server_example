@@ -1,0 +1,10 @@
+(
+    name: "Castathar East District",
+    description: "The east district of the settlement Castathar.",
+    factions: ["Civil"],
+    stones: [],
+    connections: [
+        "Castathar North District",
+        "Castathar South District",
+    ]
+)

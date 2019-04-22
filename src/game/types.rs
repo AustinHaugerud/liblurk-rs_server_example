@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 //////////////////////////////////
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct GameConstants {
     pub regeneration_factor: f32,
     pub attack_cost: u16,
@@ -14,6 +14,8 @@ pub struct GameConstants {
     pub stat_limit: u16,
     pub init_points: u16,
     pub game_description: String,
+
+    pub starting_room: String,
 }
 
 impl Default for GameConstants {
@@ -27,13 +29,14 @@ impl Default for GameConstants {
             stat_limit: std::u16::MAX,
             init_points: 100,
             game_description: String::from("Default game description"),
+            starting_room: String::new(),
         }
     }
 }
 
 //////////////////////////////////
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone, Copy)]
 pub enum StoneOffering {
     Attack,
     Defense,
@@ -45,7 +48,7 @@ pub enum StoneOffering {
     Protean, // You heal
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Stone {
     pub name: String,
     pub offering: StoneOffering,
@@ -78,9 +81,9 @@ pub struct NPCEntity {
 
 #[derive(Debug, Deserialize)]
 pub struct Location {
-    name: String,
-    description: String,
-    factions: Vec<String>,
-    stones: Vec<Stone>,
-    connections: Vec<String>,
+    pub name: String,
+    pub description: String,
+    pub factions: Vec<String>,
+    pub stones: Vec<Stone>,
+    pub connections: Vec<String>,
 }

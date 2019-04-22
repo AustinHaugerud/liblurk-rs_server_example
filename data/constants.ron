@@ -9,4 +9,6 @@
     stat_limit: 50000,
     init_points: 10,
     game_description: "Welcome! Please create your character. Note you must have at least one of each stat.",
+
+    starting_room: "Castathar South District"
 )
