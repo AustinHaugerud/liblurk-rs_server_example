@@ -185,7 +185,6 @@ impl ServerCallbacks for Server {
     }
 
     fn update(&mut self, context: WriteContext) {
-        println!("Update");
         use game::systems;
 
         self.soft_register_write_context(context);
