@@ -45,6 +45,7 @@ impl Server {
 
 impl ServerCallbacks for Server {
     fn on_connect(&mut self, context: &ServerEventContext) {
+        println!("New connection.");
         use game::resources::events::{ConnectEvents, ConnectEvent};
 
         self.soft_register_write_context(context.get_write_context());
@@ -57,6 +58,7 @@ impl ServerCallbacks for Server {
     }
 
     fn on_disconnect(&mut self, context: &ServerEventContext) {
+        println!("Disconnection.");
         use game::resources::events::{DisconnectEvents, DisconnectEvent};
 
         self.soft_register_write_context(context.get_write_context());
@@ -69,6 +71,7 @@ impl ServerCallbacks for Server {
     }
 
     fn on_message(&mut self, context: &ServerEventContext, message: &Message) {
+        println!("Message received!.");
         use game::resources::events::{MessageEvents, MessageEvent};
 
         self.soft_register_write_context(context.get_write_context());
@@ -83,6 +86,7 @@ impl ServerCallbacks for Server {
     }
 
     fn on_change_room(&mut self, context: &ServerEventContext, change_room: &ChangeRoom) {
+        println!("Change room received!");
         use game::resources::events::{ChangeRoomEvents, ChangeRoomEvent};
 
         self.soft_register_write_context(context.get_write_context());
@@ -96,6 +100,7 @@ impl ServerCallbacks for Server {
     }
 
     fn on_fight(&mut self, context: &ServerEventContext) {
+        println!("Fight received!");
         use game::resources::events::{FightEvents, FightEvent};
 
         self.soft_register_write_context(context.get_write_context());
@@ -108,6 +113,7 @@ impl ServerCallbacks for Server {
     }
 
     fn on_pvp_fight(&mut self, context: &ServerEventContext, pvp_fight: &PvpFight) {
+        println!("Pvp fight received.");
         use game::resources::events::{PvpFightEvents, PvpFightEvent};
 
         self.soft_register_write_context(context.get_write_context());
@@ -121,6 +127,7 @@ impl ServerCallbacks for Server {
     }
 
     fn on_loot(&mut self, context: &ServerEventContext, loot: &Loot) {
+        println!("Loot received.");
         use game::resources::events::{LootEvents, LootEvent};
 
         self.soft_register_write_context(context.get_write_context());
@@ -134,6 +141,7 @@ impl ServerCallbacks for Server {
     }
 
     fn on_start(&mut self, context: &ServerEventContext) {
+        println!("Start received!");
         use game::resources::events::{StartEvents, StartEvent};
 
         self.soft_register_write_context(context.get_write_context());
@@ -146,6 +154,7 @@ impl ServerCallbacks for Server {
     }
 
     fn on_character(&mut self, context: &ServerEventContext, character: &Character) {
+        println!("Character received.");
         use game::resources::events::{CharacterEvents, CharacterEvent};
 
         self.soft_register_write_context(context.get_write_context());
@@ -163,6 +172,7 @@ impl ServerCallbacks for Server {
     }
 
     fn on_leave(&mut self, context: &ServerEventContext) {
+        println!("Leave received!");
         use game::resources::events::{LeaveEvents, LeaveEvent};
 
         self.soft_register_write_context(context.get_write_context());
