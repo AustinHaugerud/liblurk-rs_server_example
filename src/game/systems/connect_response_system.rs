@@ -30,7 +30,7 @@ impl<'a> System<'a> for ConnectResponseSystem {
                 constants.game_description.clone()
             ).expect("Bug: Invalid game constants for GAME packet.");
 
-            write_context.as_ref().unwrap().enqueue_message(game_packet, &event.id);
+            //write_context.as_ref().unwrap().enqueue_message(game_packet, &event.id);
         }
     }
 }
