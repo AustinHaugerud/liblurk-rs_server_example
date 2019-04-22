@@ -1,10 +1,10 @@
-use specs::prelude::*;
-use game::resources::events::StartEvents;
+use game::components::entity::Location;
+use game::components::location::ContainedEntities;
 use game::resources::character_prep::CharacterPrep;
+use game::resources::events::StartEvents;
 use game::resources::global_name_registry::GlobalNameRegistry;
 use game::resources::start_location::StartLocation;
-use game::components::location::ContainedEntities;
-use game::components::entity::Location;
+use specs::prelude::*;
 
 pub struct StartResponseSystem;
 

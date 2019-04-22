@@ -42,10 +42,10 @@ pub enum StoneOffering {
     Defense,
     Regeneration,
     MaxHealth,
-    Telepathy, // Message anyone on the map from anywhere
+    Telepathy,     // Message anyone on the map from anywhere
     Teleportation, // Any location you've ever visited you may go to instantly
-    Celerity, // You have a chance to completely dodge an attack
-    Protean, // You heal
+    Celerity,      // You have a chance to completely dodge an attack
+    Protean,       // You heal
 }
 
 #[derive(Debug, Deserialize, Clone)]

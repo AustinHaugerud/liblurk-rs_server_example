@@ -17,17 +17,17 @@ extern crate sled;
 
 use clap::{App, Arg};
 
-use sled::Db;
-use std::net::SocketAddr;
-use std::time::Duration;
-use game::load::entity_loader::EntityLoader;
-use std::path::Path;
-use game::load::location_loader::LocationLoader;
 use game::load::constants_loader::ConstantsLoader;
-use std::sync::mpsc::channel;
-use std::thread;
+use game::load::entity_loader::EntityLoader;
+use game::load::location_loader::LocationLoader;
 use liblurk::server::lurk_server::execute_server;
 use server::Server;
+use sled::Db;
+use std::net::SocketAddr;
+use std::path::Path;
+use std::sync::mpsc::channel;
+use std::thread;
+use std::time::Duration;
 
 mod game;
 mod server;
@@ -52,7 +52,8 @@ fn main() -> Result<(), String> {
 
     if let Ok(addr) = matches.value_of("address").unwrap().parse::<SocketAddr>() {
         let server = Server::new()?;
-        execute_server(&addr, Duration::from_millis(100), server).map_err(|_| "Failed to execute server.")?;
+        execute_server(&addr, Duration::from_millis(100), server)
+            .map_err(|_| "Failed to execute server.")?;
     } else {
         println!("Invalid address.");
     }

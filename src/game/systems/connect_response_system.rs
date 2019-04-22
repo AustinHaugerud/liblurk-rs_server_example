@@ -1,9 +1,9 @@
-use specs::prelude::*;
-use liblurk::server::server_access::WriteContext;
 use game::resources::events::ConnectEvents;
 use game::types::GameConstants;
 use liblurk::protocol::protocol_message::{Game, LurkMessage};
+use liblurk::server::server_access::WriteContext;
 use liblurk::server::write_queue::enqueue_write;
+use specs::prelude::*;
 
 pub const SYS_CONNECT_RESPONSE: &'static str = "__Connect_Response_System__";
 pub const SYS_CONNECT_RESPONSE_DEPS: &'static [&str] = &[];
@@ -18,20 +18,22 @@ impl<'a> System<'a> for ConnectResponseSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (constants,
-            write_context,
-            mut connect_events
-        ) = data;
+        let (constants, write_context, mut connect_events) = data;
 
         for event in connect_events.0.drain(..) {
             println!("Processing connect event.");
             let game_packet = Game::new(
                 constants.init_points,
                 constants.stat_limit,
-                constants.game_description.clone()
-            ).expect("Bug: Invalid game constants for GAME packet.");
+                constants.game_description.clone(),
+            )
+            .expect("Bug: Invalid game constants for GAME packet.");
 
-            enqueue_write(write_context.as_ref().unwrap().clone(), LurkMessage::Game(game_packet), event.id);
+            enqueue_write(
+                write_context.as_ref().unwrap().clone(),
+                LurkMessage::Game(game_packet),
+                event.id,
+            );
         }
     }
 }

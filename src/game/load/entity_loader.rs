@@ -1,17 +1,16 @@
 use game::types::NPCEntity;
+use ron::de::from_reader;
 use std::error::Error;
 use std::path::Path;
-use ron::de::from_reader;
 
 pub struct EntityLoader {
     load_dir: String,
 }
 
 impl EntityLoader {
-
-    pub fn new(path : &str) -> EntityLoader {
+    pub fn new(path: &str) -> EntityLoader {
         EntityLoader {
-            load_dir: path.to_string()
+            load_dir: path.to_string(),
         }
     }
 
@@ -32,7 +31,9 @@ impl EntityLoader {
                 let file = fs::File::open(path)
                     .map_err(|e| format!("Failed to open file: {}", e.description()))?;
 
-                let entity: NPCEntity = from_reader(file).map_err(|e| format!("Failed to parse entity definition: {}", e.description()))?;
+                let entity: NPCEntity = from_reader(file).map_err(|e| {
+                    format!("Failed to parse entity definition: {}", e.description())
+                })?;
 
                 entities.push(entity);
             }
