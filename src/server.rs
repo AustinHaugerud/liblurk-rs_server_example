@@ -3,12 +3,14 @@ use game::resources::character_prep::CharacterPrep;
 use game::resources::global_name_registry::GlobalNameRegistry;
 use game::resources::id_name_mapping::IdNameMapping;
 use game::resources::start_location::StartLocation;
+use game::resources::start_registry::StartRegistry;
 use game::types::GameConstants;
 use liblurk::protocol::protocol_message::{ChangeRoom, Character, Loot, Message, PvpFight};
 use liblurk::server::callbacks::ServerCallbacks;
 use liblurk::server::context::ServerEventContext;
 use liblurk::server::server_access::WriteContext;
 use specs::{DispatcherBuilder, World};
+use game::resources::move_task::MoveTasks;
 
 pub struct Server {
     world: World,
@@ -33,12 +35,14 @@ impl Server {
         world.add_resource(IdNameMapping::default());
         world.add_resource(CharacterPrep::default());
         world.add_resource(constants.clone());
+        world.add_resource(StartRegistry::default());
+        world.add_resource(MoveTasks::default());
 
         let locations_loader = load::location_loader::LocationLoader::new("data/locations");
         let start_loc = load::location_loader::add_locations_to_world(
             locations_loader,
             &mut world,
-            &constants.starting_room,
+            &constants.starting_location,
         )?;
         world.add_resource(StartLocation(Some(start_loc)));
 

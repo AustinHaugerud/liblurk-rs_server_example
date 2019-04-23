@@ -10,12 +10,13 @@ pub struct GameConstants {
     pub defense_cost: u16,
     pub regeneration_cost: u16,
     pub health_cost: u16,
+    pub init_health: i16,
 
     pub stat_limit: u16,
     pub init_points: u16,
     pub game_description: String,
 
-    pub starting_room: String,
+    pub starting_location: String,
 }
 
 impl Default for GameConstants {
@@ -26,10 +27,11 @@ impl Default for GameConstants {
             defense_cost: 1,
             regeneration_cost: 1,
             health_cost: 1,
+            init_health: 10,
             stat_limit: std::u16::MAX,
             init_points: 100,
             game_description: String::from("Default game description"),
-            starting_room: String::new(),
+            starting_location: String::new(),
         }
     }
 }

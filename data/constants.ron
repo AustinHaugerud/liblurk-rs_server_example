@@ -5,10 +5,11 @@
     defense_cost: 5,
     regeneration_cost: 15,
     health_cost: 10,
+    init_health: 15,
 
     stat_limit: 50000,
     init_points: 10,
     game_description: "Welcome! Please create your character. Note you must have at least one of each stat.",
 
-    starting_room: "Castathar South District"
+    starting_location: "Castathar South District"
 )

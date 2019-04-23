@@ -40,6 +40,11 @@ pub struct MaxHealth(pub i16);
 #[storage(VecStorage)]
 pub struct Health(pub f32);
 
+/// GOLD
+#[derive(Component)]
+#[storage(VecStorage)]
+pub struct Gold(pub u16);
+
 /// LOCATION
 #[derive(Component)]
 #[storage(VecStorage)]
@@ -83,6 +88,7 @@ pub fn register_components_to_world(world: &mut World) {
     world.register::<Regeneration>();
     world.register::<MaxHealth>();
     world.register::<Health>();
+    world.register::<Gold>();
     world.register::<Location>();
     world.register::<Description>();
     world.register::<Factions>();

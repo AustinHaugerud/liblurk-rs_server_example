@@ -21,7 +21,6 @@ impl<'a> System<'a> for ConnectResponseSystem {
         let (constants, write_context, mut connect_events) = data;
 
         for event in connect_events.0.drain(..) {
-            println!("Processing connect event.");
             let game_packet = Game::new(
                 constants.init_points,
                 constants.stat_limit,
