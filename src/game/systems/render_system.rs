@@ -1,4 +1,6 @@
-use game::components::entity::{Attack, Defense, Description, Health, Location, Name, PlayerId, Regeneration, Gold};
+use game::components::entity::{
+    Attack, Defense, Description, Gold, Health, Location, Name, PlayerId, Regeneration,
+};
 use game::components::location::{ContainedEntities, Number};
 use liblurk::protocol::protocol_message::{Character, LurkMessage};
 use liblurk::server::server_access::WriteContext;
@@ -42,7 +44,10 @@ impl<'a> System<'a> for RenderSystem {
             description_storage,
         ) = data;
 
-        let write = write_context.as_ref().expect("Bug: Write context not present.").clone();
+        let write = write_context
+            .as_ref()
+            .expect("Bug: Write context not present.")
+            .clone();
 
         for entities_grouping in contained_entities_storage.join() {
             let entities: &Vec<Entity> = &entities_grouping.0;

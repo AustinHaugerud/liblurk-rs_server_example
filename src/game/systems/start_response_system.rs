@@ -1,5 +1,8 @@
-use game::components::entity::{Attack, Defense, Description, Factions, Health, Location, MaxHealth, Name, PlayerId, Regeneration, Gold};
-use game::components::location::ContainedEntities;
+use game::components::entity::{
+    Attack, Defense, Description, Factions, Gold, Health, Location, MaxHealth, Name, PlayerId,
+    Regeneration,
+};
+use game::components::location::{ContainedEntities, Number};
 use game::resources::character_prep::CharacterPrep;
 use game::resources::events::{ChangeRoomEvent, CharacterEvent, StartEvents};
 use game::resources::global_name_registry::GlobalNameRegistry;
@@ -28,6 +31,7 @@ impl<'a> System<'a> for StartResponseSystem {
         Read<'a, StartLocation>,
         Read<'a, Option<WriteContext>>,
         Read<'a, GameConstants>,
+        ReadStorage<'a, Number>,
         WriteStorage<'a, ContainedEntities>,
         WriteStorage<'a, Location>,
         Entities<'a>,
@@ -44,6 +48,7 @@ impl<'a> System<'a> for StartResponseSystem {
             start_location,
             write_context,
             constants,
+            location_number,
             mut contained_entities,
             mut location,
             entities,
@@ -58,6 +63,10 @@ impl<'a> System<'a> for StartResponseSystem {
         while let Some(event) = start_events.0.pop() {
             let client_id = event.initiator;
             let start_loc = start_location.0.expect("Bug: Start location not present.");
+            let start_loc_num = location_number
+                .get(start_loc)
+                .expect("Bug: Start location missing number component.")
+                .0;
 
             if start_registry.0.contains(&event.initiator) {
                 let error = Error::other(String::from("You have already started."))
@@ -66,7 +75,7 @@ impl<'a> System<'a> for StartResponseSystem {
             } else {
                 if let Some(submission) = character_prep.0.remove(&client_id) {
                     let character_packet =
-                        get_character_packet(&submission, &constants, start_loc, client_id);
+                        get_character_packet(&submission, &constants, start_loc_num, client_id);
 
                     let entity = entities.create();
                     updater.insert(entity, PlayerId(client_id));
@@ -100,8 +109,23 @@ impl<'a> System<'a> for StartResponseSystem {
 fn get_character_packet(
     submission: &CharacterEvent,
     constants: &GameConstants,
-    start_loc: Entity,
+    start_loc: u16,
     client_id: Uuid,
 ) -> Character {
-    unimplemented!()
+    Character::new(
+        submission.name.clone(),
+        true,
+        true,
+        false,
+        true,
+        true,
+        submission.attack,
+        submission.defense,
+        submission.regen,
+        constants.init_health,
+        0,
+        start_loc,
+        submission.description.clone(),
+    )
+    .expect("Bug: Invalid character packet in start submission stage.")
 }
