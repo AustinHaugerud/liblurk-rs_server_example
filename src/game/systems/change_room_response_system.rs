@@ -10,6 +10,9 @@ use liblurk::server::server_access::WriteContext;
 use liblurk::protocol::protocol_message::{Error, LurkMessage};
 use liblurk::server::write_queue::enqueue_write;
 
+pub const SYS_CHANGE_ROOM_RESPONSE: &'static str = "__Change_Room_System__";
+pub const SYS_CHANGE_ROOM_RESPONSE_DEPS: &'static [&str] = &[];
+
 pub struct ChangeRoomResponseSystem;
 
 impl<'a> System<'a> for ChangeRoomResponseSystem {
