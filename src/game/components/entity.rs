@@ -80,6 +80,10 @@ pub struct BehaviourFactors {
 #[storage(NullStorage)]
 pub struct InCombat;
 
+#[derive(Default, Component)]
+#[storage(VecStorage)]
+pub struct Dirty(pub bool);
+
 pub fn register_components_to_world(world: &mut World) {
     world.register::<PlayerId>();
     world.register::<Name>();
@@ -94,4 +98,5 @@ pub fn register_components_to_world(world: &mut World) {
     world.register::<Factions>();
     world.register::<BehaviourFactors>();
     world.register::<InCombat>();
+    world.register::<Dirty>();
 }

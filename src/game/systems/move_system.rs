@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use game::resources::move_task::MoveTasks;
-use game::components::entity::{Location, PlayerId, Attack, Regeneration, Defense, Health, Gold};
+use game::components::entity::{Location, PlayerId, Attack, Regeneration, Defense, Health, Gold, Dirty};
 use liblurk::server::server_access::WriteContext;
 use game::components::location::{ContainedEntities, Number, ConnectedLocations};
 use game::components::entity::Name as EntityName;
@@ -33,6 +33,7 @@ impl<'a> System<'a> for MoveSystem {
         ReadStorage<'a, ConnectedLocations>,
         ReadStorage<'a, LocationDescription>,
         ReadStorage<'a, LocationName>,
+        WriteStorage<'a, Dirty>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -53,6 +54,7 @@ impl<'a> System<'a> for MoveSystem {
             connected_locations_storage,
             location_description_storage,
             location_name_storage,
+            mut dirty_storage,
         ) = data;
 
         let write = write_context.as_ref().expect("Bug: Write context not present.").clone();
@@ -100,6 +102,10 @@ impl<'a> System<'a> for MoveSystem {
                     let connection_packet = Connection::new(con_loc_num, con_loc_name, con_loc_desc).unwrap();
                     enqueue_write(write.clone(), LurkMessage::Connection(connection_packet), mover_id);
                 }
+            }
+
+            for entity in contained_entities_storage.get(target_location).unwrap().0.iter() {
+                dirty_storage.get_mut(*entity).unwrap().0 = true;
             }
         }
     }

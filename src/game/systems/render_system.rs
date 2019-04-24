@@ -1,6 +1,4 @@
-use game::components::entity::{
-    Attack, Defense, Description, Gold, Health, Location, Name, PlayerId, Regeneration,
-};
+use game::components::entity::{Attack, Defense, Description, Gold, Health, Location, Name, PlayerId, Regeneration, Dirty};
 use game::components::location::{ContainedEntities, Number};
 use liblurk::protocol::protocol_message::{Character, LurkMessage};
 use liblurk::server::server_access::WriteContext;
@@ -27,6 +25,7 @@ impl<'a> System<'a> for RenderSystem {
         ReadStorage<'a, Gold>,
         ReadStorage<'a, Location>,
         ReadStorage<'a, Description>,
+        WriteStorage<'a, Dirty>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -43,6 +42,7 @@ impl<'a> System<'a> for RenderSystem {
             gold_storage,
             location_storage,
             description_storage,
+            mut dirty_storage,
         ) = data;
 
         let write = write_context
@@ -53,9 +53,16 @@ impl<'a> System<'a> for RenderSystem {
         for entities_grouping in contained_entities_storage.join() {
             let entities: &HashSet<Entity> = &entities_grouping.0;
             for fixed_entity in entities.iter() {
+
+
                 // Don't try to write messages to non-player entities.
                 if let Some(player_id) = player_id_storage.get(*fixed_entity) {
                     for entity in entities.iter() {
+
+                        if !dirty_storage.get(*entity).unwrap().0 {
+                            continue;
+                        }
+
                         let name = name_storage.get(*entity).unwrap();
                         let attack = attack_storage.get(*entity).unwrap();
                         let defense = defense_storage.get(*entity).unwrap();
@@ -90,6 +97,8 @@ impl<'a> System<'a> for RenderSystem {
                             LurkMessage::Character(character_packet),
                             player_id.0,
                         );
+
+                        dirty_storage.get_mut(*entity).unwrap().0 = false;
                     }
                 }
             }

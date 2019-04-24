@@ -1,4 +1,4 @@
-use game::components::entity::{Health, MaxHealth, Regeneration};
+use game::components::entity::{Health, MaxHealth, Regeneration, Dirty};
 use game::types::GameConstants;
 use specs::prelude::*;
 
@@ -13,23 +13,29 @@ impl<'a> System<'a> for RegenerationSystem {
         ReadStorage<'a, MaxHealth>,
         ReadStorage<'a, Regeneration>,
         WriteStorage<'a, Health>,
+        WriteStorage<'a, Dirty>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (constants, max_health_storage, regeneration_storage, mut health_storage) = data;
+        let (constants, max_health_storage, regeneration_storage, mut health_storage, mut dirty_storage) = data;
 
-        for (max_health, regeneration, health) in (
+        for (max_health, regeneration, health, dirty) in (
             &max_health_storage,
             &regeneration_storage,
             &mut health_storage,
+            &mut dirty_storage,
         )
             .join()
-        {
-            health.0 += constants.regeneration_factor * regeneration.0 as f32 * max_health.0 as f32;
+            {
+                if health.0 < max_health.0 as f32 {
+                    health.0 += constants.regeneration_factor * regeneration.0 as f32 * max_health.0 as f32;
 
-            if health.0 > max_health.0 as f32 {
-                health.0 = max_health.0 as f32;
+                    if health.0 > max_health.0 as f32 {
+                        health.0 = max_health.0 as f32;
+                    }
+
+                    dirty.0 = true;
+                }
             }
-        }
     }
 }
