@@ -2,7 +2,9 @@ use game::components::entity::{
     Attack, Defense, Description, Factions, Gold, Health, Location, MaxHealth, Name, PlayerId,
     Regeneration,
 };
-use game::components::location::{ContainedEntities, Number};
+use game::components::location::{ContainedEntities, Number, ConnectedLocations};
+use game::components::location::Name as LocationName;
+use game::components::location::Description as LocationDescription;
 use game::resources::character_prep::CharacterPrep;
 use game::resources::events::{ChangeRoomEvent, CharacterEvent, StartEvents};
 use game::resources::global_name_registry::GlobalNameRegistry;
@@ -10,7 +12,7 @@ use game::resources::move_task::{MoveTask, MoveTasks};
 use game::resources::start_location::StartLocation;
 use game::resources::start_registry::StartRegistry;
 use game::types::GameConstants;
-use liblurk::protocol::protocol_message::{Character, Error, LurkMessage};
+use liblurk::protocol::protocol_message::{Character, Error, LurkMessage, Room, Connection};
 use liblurk::server::server_access::WriteContext;
 use liblurk::server::write_queue::enqueue_write;
 use specs::prelude::*;
@@ -38,6 +40,9 @@ impl<'a> System<'a> for StartResponseSystem {
         WriteStorage<'a, Location>,
         Entities<'a>,
         Read<'a, LazyUpdate>,
+        ReadStorage<'a, LocationName>,
+        ReadStorage<'a, LocationDescription>,
+        ReadStorage<'a, ConnectedLocations>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -56,6 +61,9 @@ impl<'a> System<'a> for StartResponseSystem {
             mut location,
             entities,
             updater,
+            location_name_storage,
+            location_description_storage,
+            connected_locations_storage,
         ) = data;
 
         let write = write_context
@@ -99,6 +107,22 @@ impl<'a> System<'a> for StartResponseSystem {
                         .get_mut(start_loc)
                         .expect("Bug: Locations not built.");
                     start_room_container.0.insert(entity);
+
+                    let start_loc_name = location_name_storage.get(start_loc).unwrap().0.clone();
+                    let start_loc_desc = location_description_storage.get(start_loc).unwrap().0.clone();
+
+                    let location_packet = Room::new(start_loc_num, start_loc_name, start_loc_desc).unwrap();
+                    enqueue_write(write.clone(), LurkMessage::Room(location_packet), client_id);
+
+                    for connection in connected_locations_storage.get(start_loc).unwrap().0.iter() {
+                        let num = location_number.get(*connection).unwrap().0;
+                        let name = location_name_storage.get(*connection).unwrap().0.clone();
+                        let desc = location_description_storage.get(*connection).unwrap().0.clone();
+
+                        let conn_packet = Connection::new(num, name, desc).unwrap();
+                        enqueue_write(write.clone(), LurkMessage::Connection(conn_packet), client_id);
+                    }
+
                 } else {
                     let error = Error::not_ready(String::from(
                         "You do not have a ready character profile submitted.",
