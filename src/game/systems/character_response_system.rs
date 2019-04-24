@@ -94,11 +94,11 @@ fn is_fair_submission(submission: &CharacterEvent, constants: &GameConstants) ->
 
 fn get_submission_error(fair: bool, name_free: bool) -> Error {
     if !fair && !name_free {
-        Error::stat_error(String::from("")).expect("Bug: Invalid error packet.")
+        Error::stat_error(String::from("This name is already taken. Also please allocate your points properly..")).expect("Bug: Invalid error packet.")
     } else if !fair && name_free {
-        Error::stat_error(String::from("")).expect("Bug: Invalid error packet.")
+        Error::stat_error(String::from("Please allocate your points properly.")).expect("Bug: Invalid error packet.")
     } else if fair && !name_free {
-        Error::other(String::from("")).expect("Bug: Invalid error packet.")
+        Error::other(String::from("This name is already taken.")).expect("Bug: Invalid error packet.")
     } else {
         panic!("Bug: Non error state given.");
     }

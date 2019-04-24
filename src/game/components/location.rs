@@ -1,5 +1,6 @@
 use game::types::Stone;
 use specs::prelude::*;
+use std::collections::HashSet;
 
 #[derive(Component)]
 #[storage(VecStorage)]
@@ -15,7 +16,7 @@ pub struct Description(pub String);
 
 #[derive(Component)]
 #[storage(VecStorage)]
-pub struct ContainedEntities(pub Vec<Entity>);
+pub struct ContainedEntities(pub HashSet<Entity>);
 
 #[derive(Component)]
 #[storage(VecStorage)]

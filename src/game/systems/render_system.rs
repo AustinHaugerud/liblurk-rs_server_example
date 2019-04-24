@@ -6,6 +6,7 @@ use liblurk::protocol::protocol_message::{Character, LurkMessage};
 use liblurk::server::server_access::WriteContext;
 use liblurk::server::write_queue::enqueue_write;
 use specs::prelude::*;
+use std::collections::HashSet;
 
 pub const SYS_RENDER: &'static str = "__Render_System__";
 pub const SYS_RENDER_DEPS: &'static [&str] = &[];
@@ -50,7 +51,7 @@ impl<'a> System<'a> for RenderSystem {
             .clone();
 
         for entities_grouping in contained_entities_storage.join() {
-            let entities: &Vec<Entity> = &entities_grouping.0;
+            let entities: &HashSet<Entity> = &entities_grouping.0;
             for fixed_entity in entities.iter() {
                 // Don't try to write messages to non-player entities.
                 if let Some(player_id) = player_id_storage.get(*fixed_entity) {

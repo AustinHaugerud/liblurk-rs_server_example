@@ -3,9 +3,10 @@ use game::types::Location;
 use ron::de::from_reader;
 use specs::world::Builder;
 use specs::{Entity, World};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::path::Path;
+use game::resources::number_entity_mapping::NumberEntityMapping;
 
 pub struct LocationLoader {
     load_dir: String,
@@ -91,6 +92,8 @@ pub fn add_locations_to_world(
         }
     }
 
+    let mut mapping = HashMap::new();
+
     let mut room_num = 1u16;
 
     let mut entities = HashMap::new();
@@ -102,14 +105,17 @@ pub fn add_locations_to_world(
             .with(location::Number(room_num))
             .with(location::Name(name.clone()))
             .with(location::Description(location.description.clone()))
-            .with(location::ContainedEntities(vec![]))
+            .with(location::ContainedEntities(HashSet::new()))
             .with(location::Factions(location.factions.clone()))
             .with(location::Stones(location.stones.clone()))
             .with(location::ConnectedLocations(vec![]))
             .build();
+        mapping.insert(room_num, entity);
         room_num += 1;
         entities.insert(name.clone(), entity);
     }
+
+    world.add_resource(NumberEntityMapping(mapping));
 
     let start_location = *entities
         .get(start_location_name)

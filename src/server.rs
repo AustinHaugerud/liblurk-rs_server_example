@@ -11,6 +11,7 @@ use liblurk::server::callbacks::ServerCallbacks;
 use liblurk::server::context::ServerEventContext;
 use liblurk::server::server_access::WriteContext;
 use specs::{DispatcherBuilder, World};
+use game::resources::id_entity_mapping::IdEntityMapping;
 
 pub struct Server {
     world: World,
@@ -33,6 +34,7 @@ impl Server {
         world.add_resource::<Option<WriteContext>>(None);
         world.add_resource(GlobalNameRegistry::default());
         world.add_resource(IdNameMapping::default());
+        world.add_resource(IdEntityMapping::default());
         world.add_resource(CharacterPrep::default());
         world.add_resource(constants.clone());
         world.add_resource(StartRegistry::default());
