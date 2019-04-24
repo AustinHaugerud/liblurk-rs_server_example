@@ -42,9 +42,17 @@ impl<'a> System<'a> for MessageResponseSystem {
         while let Some(event) = message_events.0.pop() {
             let sender_id = event.initiator;
             if let Some(target_entity_id) = id_name_mapping.get_id(&event.target) {
-                if !start_registry.0.contains(&target_entity_id) {
+                if !start_registry.0.contains(&event.initiator) {
                     let error =
                         Error::not_ready(String::from("You have not started yet.")).unwrap();
+                    let packet = LurkMessage::Error(error);
+                    enqueue_write(write.clone(), packet, sender_id);
+                    continue;
+                }
+
+                if !start_registry.0.contains(&target_entity_id) {
+                    let error =
+                        Error::no_target(String::from("This person hasn't started.")).unwrap();
                     let packet = LurkMessage::Error(error);
                     enqueue_write(write.clone(), packet, sender_id);
                     continue;
@@ -63,7 +71,7 @@ impl<'a> System<'a> for MessageResponseSystem {
                     let error = Error::other(String::from(
                         "Only telepaths can message people not close by.",
                     ))
-                    .unwrap();
+                        .unwrap();
                     let packet = LurkMessage::Error(error);
                     enqueue_write(write.clone(), packet, sender_id);
                     continue;
@@ -81,7 +89,7 @@ impl<'a> System<'a> for MessageResponseSystem {
                     "'{}' either does not exist or cannot/won't converse with you.",
                     &event.target
                 ))
-                .unwrap();
+                    .unwrap();
                 let packet = LurkMessage::Error(error);
                 enqueue_write(write.clone(), packet, sender_id);
             }
