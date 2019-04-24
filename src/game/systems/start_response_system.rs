@@ -19,6 +19,7 @@ use liblurk::server::server_access::WriteContext;
 use liblurk::server::write_queue::enqueue_write;
 use specs::prelude::*;
 use uuid::Uuid;
+use game::resources::id_name_mapping::IdNameMapping;
 
 pub const SYS_START_RESPONSE: &'static str = "__Start_Response_System__";
 pub const SYS_START_RESPONSE_DEPS: &'static [&str] = &[SYS_RENDER];
@@ -27,6 +28,7 @@ pub struct StartResponseSystem;
 
 impl<'a> System<'a> for StartResponseSystem {
     type SystemData = (
+        Write<'a, IdNameMapping>,
         Write<'a, IdEntityMapping>,
         Write<'a, StartEvents>,
         Write<'a, MoveTasks>,
@@ -49,6 +51,7 @@ impl<'a> System<'a> for StartResponseSystem {
 
     fn run(&mut self, data: Self::SystemData) {
         let (
+            mut id_name_mapping,
             mut id_entity_mapping,
             mut start_events,
             mut move_tasks,
@@ -89,6 +92,7 @@ impl<'a> System<'a> for StartResponseSystem {
             } else {
                 if let Some(submission) = character_prep.0.remove(&client_id) {
                     start_registry.0.insert(client_id);
+                    id_name_mapping.insert(&client_id, &submission.name);
                     let character_packet =
                         get_character_packet(&submission, &constants, start_loc_num, client_id);
 
