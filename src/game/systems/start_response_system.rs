@@ -1,21 +1,24 @@
-use game::components::entity::{Attack, Defense, Description, Factions, Gold, Health, Location, MaxHealth, Name, PlayerId, Regeneration, Dirty};
-use game::components::location::{ContainedEntities, Number, ConnectedLocations};
-use game::components::location::Name as LocationName;
+use game::components::entity::{
+    Abilities, Attack, Defense, Description, Dirty, Factions, Gold, Health, Location, MaxHealth,
+    Name, PlayerId, Regeneration,
+};
 use game::components::location::Description as LocationDescription;
+use game::components::location::Name as LocationName;
+use game::components::location::{ConnectedLocations, ContainedEntities, Number};
 use game::resources::character_prep::CharacterPrep;
 use game::resources::events::{ChangeRoomEvent, CharacterEvent, StartEvents};
 use game::resources::global_name_registry::GlobalNameRegistry;
+use game::resources::id_entity_mapping::IdEntityMapping;
 use game::resources::move_task::{MoveTask, MoveTasks};
 use game::resources::start_location::StartLocation;
 use game::resources::start_registry::StartRegistry;
+use game::systems::render_system::SYS_RENDER;
 use game::types::GameConstants;
-use liblurk::protocol::protocol_message::{Character, Error, LurkMessage, Room, Connection};
+use liblurk::protocol::protocol_message::{Character, Connection, Error, LurkMessage, Room};
 use liblurk::server::server_access::WriteContext;
 use liblurk::server::write_queue::enqueue_write;
 use specs::prelude::*;
 use uuid::Uuid;
-use game::resources::id_entity_mapping::IdEntityMapping;
-use game::systems::render_system::SYS_RENDER;
 
 pub const SYS_START_RESPONSE: &'static str = "__Start_Response_System__";
 pub const SYS_START_RESPONSE_DEPS: &'static [&str] = &[SYS_RENDER];
@@ -102,6 +105,13 @@ impl<'a> System<'a> for StartResponseSystem {
                     updater.insert(entity, Location(start_loc));
                     updater.insert(entity, Description(submission.description));
                     updater.insert(entity, Factions(vec![(String::from("Civil"), 1.0)]));
+                    updater.insert(
+                        entity,
+                        Abilities {
+                            telepathy: false,
+                            teleportation: false,
+                        },
+                    );
                     updater.insert(entity, Dirty(true));
 
                     {
@@ -112,18 +122,31 @@ impl<'a> System<'a> for StartResponseSystem {
                     }
 
                     let start_loc_name = location_name_storage.get(start_loc).unwrap().0.clone();
-                    let start_loc_desc = location_description_storage.get(start_loc).unwrap().0.clone();
+                    let start_loc_desc = location_description_storage
+                        .get(start_loc)
+                        .unwrap()
+                        .0
+                        .clone();
 
-                    let location_packet = Room::new(start_loc_num, start_loc_name, start_loc_desc).unwrap();
+                    let location_packet =
+                        Room::new(start_loc_num, start_loc_name, start_loc_desc).unwrap();
                     enqueue_write(write.clone(), LurkMessage::Room(location_packet), client_id);
 
                     for connection in connected_locations_storage.get(start_loc).unwrap().0.iter() {
                         let num = location_number.get(*connection).unwrap().0;
                         let name = location_name_storage.get(*connection).unwrap().0.clone();
-                        let desc = location_description_storage.get(*connection).unwrap().0.clone();
+                        let desc = location_description_storage
+                            .get(*connection)
+                            .unwrap()
+                            .0
+                            .clone();
 
                         let conn_packet = Connection::new(num, name, desc).unwrap();
-                        enqueue_write(write.clone(), LurkMessage::Connection(conn_packet), client_id);
+                        enqueue_write(
+                            write.clone(),
+                            LurkMessage::Connection(conn_packet),
+                            client_id,
+                        );
                     }
 
                     for entity in contained_entities.get(start_loc).unwrap().0.iter() {
@@ -131,7 +154,6 @@ impl<'a> System<'a> for StartResponseSystem {
                             dirty_status.0 = true;
                         }
                     }
-
                 } else {
                     let error = Error::not_ready(String::from(
                         "You do not have a ready character profile submitted.",

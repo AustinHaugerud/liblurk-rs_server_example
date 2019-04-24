@@ -1,4 +1,5 @@
 use game::components::location::ConnectedLocations;
+use game::resources::number_entity_mapping::NumberEntityMapping;
 use game::types::Location;
 use ron::de::from_reader;
 use specs::world::Builder;
@@ -6,7 +7,6 @@ use specs::{Entity, World};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::path::Path;
-use game::resources::number_entity_mapping::NumberEntityMapping;
 
 pub struct LocationLoader {
     load_dir: String,

@@ -1,4 +1,6 @@
-use game::components::entity::{Attack, Defense, Description, Gold, Health, Location, Name, PlayerId, Regeneration, Dirty};
+use game::components::entity::{
+    Attack, Defense, Description, Dirty, Gold, Health, Location, Name, PlayerId, Regeneration,
+};
 use game::components::location::{ContainedEntities, Number};
 use liblurk::protocol::protocol_message::{Character, LurkMessage};
 use liblurk::server::server_access::WriteContext;
@@ -53,12 +55,9 @@ impl<'a> System<'a> for RenderSystem {
         for entities_grouping in contained_entities_storage.join() {
             let entities: &HashSet<Entity> = &entities_grouping.0;
             for fixed_entity in entities.iter() {
-
-
                 // Don't try to write messages to non-player entities.
                 if let Some(player_id) = player_id_storage.get(*fixed_entity) {
                     for entity in entities.iter() {
-
                         if !dirty_storage.get(*entity).unwrap().0 {
                             continue;
                         }

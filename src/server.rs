@@ -1,6 +1,7 @@
 use game::load::constants_loader::ConstantsLoader;
 use game::resources::character_prep::CharacterPrep;
 use game::resources::global_name_registry::GlobalNameRegistry;
+use game::resources::id_entity_mapping::IdEntityMapping;
 use game::resources::id_name_mapping::IdNameMapping;
 use game::resources::move_task::MoveTasks;
 use game::resources::start_location::StartLocation;
@@ -11,7 +12,6 @@ use liblurk::server::callbacks::ServerCallbacks;
 use liblurk::server::context::ServerEventContext;
 use liblurk::server::server_access::WriteContext;
 use specs::{DispatcherBuilder, World};
-use game::resources::id_entity_mapping::IdEntityMapping;
 
 pub struct Server {
     world: World,

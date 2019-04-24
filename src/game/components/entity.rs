@@ -84,6 +84,13 @@ pub struct InCombat;
 #[storage(VecStorage)]
 pub struct Dirty(pub bool);
 
+#[derive(Default, Component)]
+#[storage(VecStorage)]
+pub struct Abilities {
+    pub telepathy: bool,
+    pub teleportation: bool,
+}
+
 pub fn register_components_to_world(world: &mut World) {
     world.register::<PlayerId>();
     world.register::<Name>();
@@ -99,4 +106,5 @@ pub fn register_components_to_world(world: &mut World) {
     world.register::<BehaviourFactors>();
     world.register::<InCombat>();
     world.register::<Dirty>();
+    world.register::<Abilities>();
 }
