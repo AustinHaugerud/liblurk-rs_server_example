@@ -37,6 +37,7 @@ pub fn get_dispatcher<'a, 'b>() -> Dispatcher<'a, 'b> {
             SYS_CHARACTER_RESPONSE,
             SYS_CHARACTER_RESPONSE_DEPS,
         )
+        .with(RenderSystem, SYS_RENDER, SYS_RENDER_DEPS)
         .with(
             StartResponseSystem,
             SYS_START_RESPONSE,
@@ -47,6 +48,5 @@ pub fn get_dispatcher<'a, 'b>() -> Dispatcher<'a, 'b> {
             SYS_MOVE,
             SYS_MOVE_DEPS
         )
-        .with(RenderSystem, SYS_RENDER, SYS_RENDER_DEPS)
         .build()
 }
