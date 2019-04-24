@@ -127,7 +127,9 @@ impl<'a> System<'a> for StartResponseSystem {
                     }
 
                     for entity in contained_entities.get(start_loc).unwrap().0.iter() {
-                        dirty_storage.get_mut(*entity).unwrap().0 = true;
+                        if let Some(dirty_status) = dirty_storage.get_mut(*entity) {
+                            dirty_status.0 = true;
+                        }
                     }
 
                 } else {
