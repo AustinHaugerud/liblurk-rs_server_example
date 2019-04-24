@@ -41,6 +41,7 @@ impl<'a> System<'a> for StartResponseSystem {
         ReadStorage<'a, LocationName>,
         ReadStorage<'a, LocationDescription>,
         ReadStorage<'a, ConnectedLocations>,
+        WriteStorage<'a, Dirty>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -62,6 +63,7 @@ impl<'a> System<'a> for StartResponseSystem {
             location_name_storage,
             location_description_storage,
             connected_locations_storage,
+            mut dirty_storage,
         ) = data;
 
         let write = write_context
@@ -102,10 +104,12 @@ impl<'a> System<'a> for StartResponseSystem {
                     updater.insert(entity, Factions(vec![(String::from("Civil"), 1.0)]));
                     updater.insert(entity, Dirty(true));
 
-                    let start_room_container = contained_entities
-                        .get_mut(start_loc)
-                        .expect("Bug: Locations not built.");
-                    start_room_container.0.insert(entity);
+                    {
+                        let start_room_container = contained_entities
+                            .get_mut(start_loc)
+                            .expect("Bug: Locations not built.");
+                        start_room_container.0.insert(entity);
+                    }
 
                     let start_loc_name = location_name_storage.get(start_loc).unwrap().0.clone();
                     let start_loc_desc = location_description_storage.get(start_loc).unwrap().0.clone();
@@ -120,6 +124,10 @@ impl<'a> System<'a> for StartResponseSystem {
 
                         let conn_packet = Connection::new(num, name, desc).unwrap();
                         enqueue_write(write.clone(), LurkMessage::Connection(conn_packet), client_id);
+                    }
+
+                    for entity in contained_entities.get(start_loc).unwrap().0.iter() {
+                        dirty_storage.get_mut(*entity).unwrap().0 = true;
                     }
 
                 } else {

@@ -9,9 +9,10 @@ use game::components::entity::Description as EntityDescription;
 use game::components::location::Description as LocationDescription;
 use liblurk::protocol::protocol_message::{Character, LurkMessage, Room, Connection};
 use liblurk::server::write_queue::enqueue_write;
+use game::systems::render_system::SYS_RENDER;
 
 pub const SYS_MOVE: &'static str = "__Move_System__";
-pub const SYS_MOVE_DEPS: &'static [&str] = &[];
+pub const SYS_MOVE_DEPS: &'static [&str] = &[SYS_RENDER];
 
 pub struct MoveSystem;
 
