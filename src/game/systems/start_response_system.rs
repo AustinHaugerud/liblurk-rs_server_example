@@ -1,7 +1,4 @@
-use game::components::entity::{
-    Attack, Defense, Description, Factions, Gold, Health, Location, MaxHealth, Name, PlayerId,
-    Regeneration,
-};
+use game::components::entity::{Attack, Defense, Description, Factions, Gold, Health, Location, MaxHealth, Name, PlayerId, Regeneration, Dirty};
 use game::components::location::{ContainedEntities, Number, ConnectedLocations};
 use game::components::location::Name as LocationName;
 use game::components::location::Description as LocationDescription;
@@ -103,6 +100,7 @@ impl<'a> System<'a> for StartResponseSystem {
                     updater.insert(entity, Location(start_loc));
                     updater.insert(entity, Description(submission.description));
                     updater.insert(entity, Factions(vec![(String::from("Civil"), 1.0)]));
+                    updater.insert(entity, Dirty(true));
 
                     let start_room_container = contained_entities
                         .get_mut(start_loc)
