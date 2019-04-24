@@ -8,6 +8,9 @@ use liblurk::server::server_access::WriteContext;
 use liblurk::server::write_queue::enqueue_write;
 use specs::prelude::*;
 
+pub const SYS_MESSAGE_RESPONSE: &'static str = "__Message_Response_System__";
+pub const SYS_MESSAGE_RESPONSE_DEPS: &'static [&str] = &[];
+
 pub struct MessageResponseSystem;
 
 impl<'a> System<'a> for MessageResponseSystem {

@@ -14,6 +14,7 @@ use game::systems::start_response_system::{
     StartResponseSystem, SYS_START_RESPONSE, SYS_START_RESPONSE_DEPS,
 };
 use specs::{Dispatcher, DispatcherBuilder};
+use game::systems::message_response_system::{MessageResponseSystem, SYS_MESSAGE_RESPONSE, SYS_MESSAGE_RESPONSE_DEPS};
 
 pub mod change_room_response_system;
 pub mod character_response_system;
@@ -52,5 +53,6 @@ pub fn get_dispatcher<'a, 'b>() -> Dispatcher<'a, 'b> {
             SYS_CHANGE_ROOM_RESPONSE_DEPS,
         )
         .with(MoveSystem, SYS_MOVE, SYS_MOVE_DEPS)
+        .with(MessageResponseSystem, SYS_MESSAGE_RESPONSE, SYS_MESSAGE_RESPONSE_DEPS)
         .build()
 }
