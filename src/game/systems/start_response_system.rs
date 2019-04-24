@@ -18,9 +18,10 @@ use liblurk::server::write_queue::enqueue_write;
 use specs::prelude::*;
 use uuid::Uuid;
 use game::resources::id_entity_mapping::IdEntityMapping;
+use game::systems::render_system::SYS_RENDER;
 
 pub const SYS_START_RESPONSE: &'static str = "__Start_Response_System__";
-pub const SYS_START_RESPONSE_DEPS: &'static [&str] = &[];
+pub const SYS_START_RESPONSE_DEPS: &'static [&str] = &[SYS_RENDER];
 
 pub struct StartResponseSystem;
 
